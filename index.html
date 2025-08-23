@@ -34,7 +34,9 @@
   }
   .sub{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:700; font-size:17px; margin:2px 0 0;
+    font-weight:500;   /* ✅ 細めに変更 */
+    font-size:17px;
+    margin:2px 0 0;
   }
 
   /* 入力行 */
@@ -54,19 +56,19 @@
   }
   .unit{ font-weight:600; font-size:13px; color:#444; }
 
-  /* ✅ 元のピル型ボタンに戻す */
+  /* CHECKボタン */
   .btn{
     margin-top:10px; padding:12px 22px; font-size:16px; color:#fff; background:var(--brand);
     border:none; border-radius:999px; cursor:pointer; min-height:44px;
   }
 
-  /* ✅ レイアウトが動かないように「高さの器」を用意 */
+  /* 結果エリア（高さ固定で動かないように） */
   .result{ margin-top:12px; font-size:26px; font-weight:700; min-height:32px; }
   .reading{ margin-top:0; font-size:12px; color:#444; min-height:16px; }
 
-  /* ✅ OFUSE：アウトライン角丸四角＋文字少し太く */
+  /* OFUSEボタン */
   .support-btn{
-    margin-top:6px; text-decoration:none; font-size:14px; font-weight:600;
+    margin-top:6px; text-decoration:none; font-size:14px; font-weight:600; /* ✅ 少し太く */
     color:#ff7f50; background:transparent; border:2px solid #ff7f50;
     padding:8px 14px; border-radius:10px; display:inline-block;
   }
@@ -135,13 +137,14 @@
     document.getElementById('reading').textContent = stemR + branchR;
   }
 
-  // 初期は今日を選択（結果はまだ表示しない：ボタンで反応）
+  // ✅ 初期表示：今日を選んで結果も表示
   (function(){
     const t=new Date();
     yearSel.value=Math.min(Math.max(t.getFullYear(),1950),2060);
     monthSel.value=t.getMonth()+1;
     updateDays();
     daySel.value=t.getDate();
+    calculate(); // ← 最初に実行
   })();
 
   yearSel.addEventListener('change', updateDays);
