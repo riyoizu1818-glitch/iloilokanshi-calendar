@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>進化版・日干支チェッカー</title>
+<title>日干支＆calendar</title>
 <style>
   :root{
-    --ink:#333; --brand:#ff68b6; --white:#fff;
+    --ink:#333; --brand:#ff68b6; --white:#fff; --blue:#1e90ff;
   }
-  html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink);}
+  html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); }
   body{
     font-family:'Hiragino Kaku Gothic ProN', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
     text-align:center;
@@ -18,60 +18,102 @@
     min-height:100svh; padding:24px 16px calc(24px + env(safe-area-inset-bottom));
     display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px;
   }
-  .card{
-    background:rgba(255,255,255,.6); border-radius:50%; width:260px; height:260px;
-    box-shadow:0 8px 24px rgba(0,0,0,.1);
-    display:flex; flex-direction:column; justify-content:center; align-items:center; padding:22px;
-  }
-  h1{ margin:0 0 2px; font-size:28px; letter-spacing:.02em; }
-  .sub{ font-size:14px; color:#444; }
 
-  .row{ display:flex; gap:8px; align-items:center; justify-content:center; margin-top:12px; }
+  /* 丸カード */
+  .card{
+    background:rgba(255,255,255,.6);
+    border-radius:50%;
+    width: 260px;
+    height:260px;        /* ほんの少しゆとりを追加 */
+    box-shadow:0 8px 24px rgba(0,0,0,.1);
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    padding:18px;
+  }
+
+  /* ロゴ & サブタイトル（Futura風） */
+  .logo{
+    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
+    font-weight:900;               /* 極太 */
+    font-size:34px;
+    letter-spacing:.02em;
+    margin:0;
+  }
+  .sub{
+    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
+    font-weight:700;               /* 太め */
+    font-size:17px;                /* ロゴの約1/2 */
+    margin:2px 0 0;
+  }
+
+  /* 入力行 */
+  .row{ display:flex; gap:6px; align-items:center; justify-content:center; margin-top:10px; }
+
+  /* セレクトをギリギリ小さく、数字はブルー、▼でスクロール感 */
+  .sel{
+    position:relative; display:inline-block;
+  }
   select{
     appearance:none; -webkit-appearance:none; outline:none;
-    padding:10px 12px; font-size:16px; border-radius:10px; border:1px solid #ccc;
-    background:rgba(255,255,255,.95); min-width:88px;
+    font-size:16px;                 /* iOSズーム防止 */
+    color:var(--blue);
+    border:1px solid #cfd6e0;
+    background:rgba(255,255,255,.96);
+    border-radius:8px;
+    padding:6px 22px 6px 8px;       /* 右に▼分の余白 */
+    line-height:1.1;
   }
-  .unit{ font-size:14px; color:#444; }
+  .sel-year select{ width:82px; }   /* 1950〜2060が収まる幅 */
+  .sel-month select,
+  .sel-day select{ width:60px; }    /* できるだけ小さく */
 
+  /* ▼アイコン（スクロールできる感じのヒント） */
+  .sel::after{
+    content:"▼";
+    position:absolute; right:8px; top:50%;
+    transform:translateY(-52%);
+    font-size:10px; color:#7aa8ff; pointer-events:none;
+  }
+
+  /* 単位（年・月・日）は少し太め */
+  .unit{
+    font-weight:600;
+    font-size:13px;
+    color:#444;
+  }
+
+  /* ボタン＆結果 */
   .btn{
-    margin-top:10px; padding:12px 22px; font-size:16px; color:#fff; background:var(--brand);
-    border:none; border-radius:999px; cursor:pointer; min-height:44px;
+    margin-top:10px; padding:10px 18px; font-size:16px; color:#fff; background:var(--brand);
+    border:none; border-radius:12px; cursor:pointer; min-height:44px;
   }
-
   .result{ margin-top:12px; font-size:26px; font-weight:700; }
   .reading{ margin-top:0; font-size:12px; color:#444; }
 
+  /* OFUSE：幅狭＋アウトライン角丸四角（非ピル） */
   .support-btn{
-    text-decoration:none; font-size:16px; color:#fff; background:#ff7f50;
-    padding:12px 22px; border-radius:999px; display:inline-block; min-height:44px;
+    margin-top:6px;
+    text-decoration:none;
+    font-size:14px;
+    color:#ff7f50;
+    background:transparent;
+    border:2px solid #ff7f50;
+    padding:8px 14px;               /* 幅を狭める */
+    border-radius:10px;             /* 角丸四角 */
+    display:inline-block;
   }
-
-  /* オプション：月一覧の箱（使うなら） */
-  .month-kanshi{
-    max-width:340px; background:rgba(255,255,255,.55); border-radius:12px;
-    padding:10px 12px; box-shadow:0 2px 10px rgba(0,0,0,.06); text-align:left; font-size:14px; line-height:1.5;
-  }
-  .month-kanshi .mk-title{ font-weight:700; text-align:center; margin:0 0 6px; }
-  .month-kanshi ul{ list-style:none; margin:0; padding:0; columns:2; }
-  @media (max-width:360px){ .month-kanshi ul{ columns:1; } }
-  .month-kanshi li{ break-inside:avoid; padding:2px 0; }
-  .month-kanshi .d{ display:inline-block; width:2.2em; font-variant-numeric:tabular-nums; }
-  .month-kanshi .k{ font-weight:700; margin-left:4px; }
-  .month-kanshi .r{ color:#555; margin-left:4px; font-size:12px; }
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>ilo.ilo</h1>
-      <div class="sub">進化版・日干支</div>
+      <h1 class="logo">ilo.ilo</h1>
+      <div class="sub">日干支＆calendar</div>
 
-      <!-- ( )年 ( )月 ( )日 のセレクト入力 -->
+      <!-- ( )年 ( )月 ( )日のセレクト入力（超コンパクト） -->
       <div class="row">
-        <select id="year"></select><span class="unit">年</span>
-        <select id="month"></select><span class="unit">月</span>
-        <select id="day"></select><span class="unit">日</span>
+        <span class="sel sel-year"><select id="year"></select></span><span class="unit">年</span>
+        <span class="sel sel-month"><select id="month"></select></span><span class="unit">月</span>
+        <span class="sel sel-day"><select id="day"></select></span><span class="unit">日</span>
       </div>
 
       <button class="btn" onclick="calculate()">CHECK!</button>
@@ -80,9 +122,7 @@
       <div class="reading" id="reading"></div>
     </div>
 
-    <!-- オプション：その月の干支一覧（使わないならこのdivごと削除OK） -->
-    <div id="month-kanshi" class="month-kanshi" style="display:none;"></div>
-
+    <!-- 応援ボタン（アウトライン角丸四角） -->
     <a class="support-btn" href="https://ofuse.me/izuiloilo" target="_blank" rel="noopener">izuを応援する</a>
   </div>
 
@@ -110,7 +150,7 @@
   for(let m=1; m<=12; m++){
     const opt=document.createElement('option'); opt.value=m; opt.text=m; monthSel.add(opt);
   }
-  // 日：後で月に合わせて更新するので一旦1〜31
+  // 日：一旦1〜31（後で月末に合わせて調整）
   for(let d=1; d<=31; d++){
     const opt=document.createElement('option'); opt.value=d; opt.text=d; daySel.add(opt);
   }
@@ -118,44 +158,24 @@
   // 月末に合わせて日数を調整
   function updateDays(){
     const y = parseInt(yearSel.value);
-    const m = parseInt(monthSel.value); // 1-12
+    const m = parseInt(monthSel.value);  // 1-12
     const last = new Date(y, m, 0).getDate();
     const current = parseInt(daySel.value) || 1;
 
-    // optionを張り替え
     daySel.innerHTML = '';
     for(let d=1; d<=last; d++){
       const opt=document.createElement('option'); opt.value=d; opt.text=d; daySel.add(opt);
     }
-    // もともとの日が月末超えなら月末に寄せる
     daySel.value = Math.min(current, last);
   }
 
-  // 干支インデックス
+  // 干支インデックス算出
   function kanshiIndexFromDate(date){
     const diffDays = Math.floor((date - baseDate) / (1000*60*60*24));
     return (baseIndex + (diffDays % 60) + 60) % 60;
   }
 
-  // 月一覧（オプション）
-  function renderMonthKanshi(year, month){ // month: 1-12
-    const box = document.getElementById('month-kanshi');
-    if(!box) return;
-    const lastDay = new Date(year, month, 0).getDate();
-    let html = `<div class="mk-title">${year}年 ${month}月 の干支</div><ul>`;
-    for(let d=1; d<=lastDay; d++){
-      const dt = new Date(year, month-1, d);
-      const idx = kanshiIndexFromDate(dt);
-      const k = stems[idx % 10] + branches[idx % 12];
-      const r = stemsReading[idx % 10] + branchesReading[idx % 12];
-      html += `<li><span class="d">${d}日</span><span class="k">${k}</span><span class="r">（${r}）</span></li>`;
-    }
-    html += `</ul>`;
-    box.style.display = 'block';
-    box.innerHTML = html;
-  }
-
-  // 計算本体
+  // 計算（★ボタンを押したときだけ実行）
   function calculate(){
     const y = parseInt(yearSel.value);
     const m = parseInt(monthSel.value);
@@ -172,25 +192,22 @@
 
     document.getElementById('result').textContent  = stem + branch;
     document.getElementById('reading').textContent = stemR + branchR;
-
-    // 月一覧を出したい時はコメントアウト解除
-    // renderMonthKanshi(y, m);
   }
 
-  // 初期表示：今日を選択
+  // 初期表示：今日を選択（★結果は出さない＝ボタンで反応）
   (function initWithToday(){
     const t = new Date();
-    yearSel.value  = Math.min(Math.max(t.getFullYear(), 1950), 2060);
+    const year = Math.min(Math.max(t.getFullYear(), 1950), 2060);
+    yearSel.value  = year;
     monthSel.value = t.getMonth()+1;
     updateDays();
     daySel.value   = t.getDate();
-    calculate();
+    // calculate(); ← 実行しない（ボタン押下で反応）
   })();
 
-  // 年・月が変わったら日数更新＆結果再計算
-  yearSel.addEventListener('change', ()=>{ updateDays(); calculate(); });
-  monthSel.addEventListener('change', ()=>{ updateDays(); calculate(); });
-  daySel.addEventListener('change',   ()=>{ calculate(); });
+  // 年・月変更時は日数だけ調整（結果は更新しない）
+  yearSel.addEventListener('change', updateDays);
+  monthSel.addEventListener('change', updateDays);
 </script>
 </body>
 </html>
