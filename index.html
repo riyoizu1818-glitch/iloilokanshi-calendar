@@ -17,7 +17,6 @@
     display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px;
   }
 
-  /* 丸カード */
   .card{
     background:rgba(255,255,255,.6);
     border-radius:50%;
@@ -27,19 +26,17 @@
     padding:18px;
   }
 
-  /* ロゴ & サブタイトル（Futura風） */
   .logo{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:900; font-size:34px; letter-spacing:.02em; margin:0;
   }
   .sub{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:500;   /* ✅ 細めに変更 */
+    font-weight:500;   /* 少し細め */
     font-size:17px;
     margin:2px 0 0;
   }
 
-  /* 入力行 */
   .row{ display:flex; gap:6px; align-items:center; justify-content:center; margin-top:10px; }
   .sel{ position:relative; display:inline-block; }
   select{
@@ -56,21 +53,27 @@
   }
   .unit{ font-weight:600; font-size:13px; color:#444; }
 
-  /* CHECKボタン */
   .btn{
     margin-top:10px; padding:12px 22px; font-size:16px; color:#fff; background:var(--brand);
     border:none; border-radius:999px; cursor:pointer; min-height:44px;
   }
 
-  /* 結果エリア（高さ固定で動かないように） */
   .result{ margin-top:12px; font-size:26px; font-weight:700; min-height:32px; }
   .reading{ margin-top:0; font-size:12px; color:#444; min-height:16px; }
 
-  /* OFUSEボタン */
   .support-btn{
-    margin-top:6px; text-decoration:none; font-size:14px; font-weight:600; /* ✅ 少し太く */
+    margin-top:6px; text-decoration:none; font-size:14px; font-weight:600;
     color:#ff7f50; background:transparent; border:2px solid #ff7f50;
     padding:8px 14px; border-radius:10px; display:inline-block;
+  }
+
+  /* ✅ コピーライト */
+  .footer {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6); /* 薄い白っぽいグレー */
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px;
   }
 </style>
 </head>
@@ -94,6 +97,15 @@
 
     <a class="support-btn" href="https://ofuse.me/izuiloilo" target="_blank" rel="noopener">izuを応援する</a>
   </div>
+
+  <!-- ✅ コピーライト -->
+  <footer class="footer">
+  © <span id="year"></span> ilo.ilo / izu
+</footer>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
 
 <script>
   const stems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
@@ -144,7 +156,7 @@
     monthSel.value=t.getMonth()+1;
     updateDays();
     daySel.value=t.getDate();
-    calculate(); // ← 最初に実行
+    calculate();
   })();
 
   yearSel.addEventListener('change', updateDays);
