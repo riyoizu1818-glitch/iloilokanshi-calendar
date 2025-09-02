@@ -7,20 +7,33 @@
 <style>
   :root{
     --ink:#333; --brand:#ff68b6;
-    /* 入力見た目：ここを変えると年月・日まとめて調整できます */
-    --field-fg:#555;               /* 文字色（グレー系） */
-    --field-size:16px;             /* フォントサイズ */
-    --field-weight:350;            /* 太さ 400〜600 */
-    --field-border:#cfd6e0;        /* 枠線色 */
-    --field-radius:8px;            /* 角丸 */
-    --field-height:38px;           /* ボックス高さ（年月/日 共通） */
-    --field-pad-x:10px;            /* 左右の内側余白（テキスト側） */
-    --caret-color:#7aa8ff;         /* ▼の色 */
 
-    /* カレンダーへボタン（チェッカー→カレンダー） */
+    /* 入力（年月/日 共通） */
+    --field-fg:#555;              /* 文字色（グレー系） */
+    --field-size:16px;            /* フォントサイズ */
+    --field-weight:400;           /* 太さ 400〜600 */
+    --field-border:#cfd6e0;       /* 枠線色 */
+    --field-radius:8px;           /* 角丸 */
+    --field-height:38px;          /* ボックス高さ（年月/日 共通） */
+    --field-pad-x:10px;           /* 左右の内側余白（テキスト側） */
+    --caret-color:#7aa8ff;        /* ▼の色 */
+
+    /* 年月ボックスの詰め具合 */
+    --ym-gap:6px;                 /* 「年」「月」間の隙間 */
+    --ym-caret-pad:22px;          /* 右側の▼ぶんの余白 */
+
+    /* 結果表示の調整 */
+    --res-kanshi-size:26px;       /* 甲戌など */
+    --res-reading-size:12px;      /* きのえいぬ */
+
+    /* 〈甲🌳樹木の人〉の調整（←ここを変えればOK） */
+    --persona-size:15px;
+    --persona-weight:600;
+    --persona-color:#444;
+
+    /* ボタン/OFUSE */
     --nav-btn-bg:#3b66bce2; --nav-btn-fg:#fff;
-    /* OFUSEの固定距離（下から） */
-    --support-offset: 25px;
+    --support-offset: 10px;
   }
 
   html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); }
@@ -69,30 +82,27 @@
     line-height:1;
   }
 
-  /* 年月：ひとまとまりボックス（中に 年 と 月 と ▼ を含める） */
+  /* 年月：ひと箱（中に 年・月・▼ を含める） */
   .ym-box{
-    position:relative; display:inline-flex; align-items:center; gap:10px;
-    padding:0 calc(var(--field-pad-x) + 18px) 0 var(--field-pad-x); /* 右は▼ぶん */
+    position:relative; display:inline-flex; align-items:center;
+    gap:var(--ym-gap);
+    padding:0 calc(var(--field-pad-x) + var(--ym-caret-pad)) 0 var(--field-pad-x);
   }
-  .ym-year, .ym-month, .ym-suffix{
-    pointer-events:none; user-select:none;
-  }
-  .ym-suffix{ opacity:.9; } /* 「年」「月」の表示 */
+  .ym-year, .ym-month, .ym-suffix{ pointer-events:none; user-select:none; }
+  .ym-suffix{ opacity:.9; }
   .ym-caret{
     position:absolute; right:8px; top:50%; transform:translateY(-50%);
     font-size:10px; color:var(--caret-color); pointer-events:none;
   }
-  /* 実体：スマホでホイールを確実に出すため全面に透明 month 入力 */
+  /* スマホでホイールを確実に出すため、全面に透明 month 入力 */
   .ym-box input[type="month"]{
     position:absolute; inset:0; width:100%; height:100%;
     opacity:0; border:0; background:transparent; appearance:none; -webkit-appearance:none;
     cursor:pointer;
   }
 
-  /* 日：ボックス内に「日」と「▼」を入れる */
-  .day-box{
-    position:relative; display:inline-block; padding:0 var(--field-pad-x);
-  }
+  /* 日：ボックス内に「日」と「▼」を入れる（年月と高さ＆文字感を揃え） */
+  .day-box{ position:relative; display:inline-block; padding:0 var(--field-pad-x); }
   .day-box select{
     appearance:none; -webkit-appearance:none; outline:none;
     border:0; background:transparent; color:var(--field-fg);
@@ -109,15 +119,18 @@
     font-size:10px; color:var(--caret-color); pointer-events:none;
   }
 
-  /* CHECKボタン */
-  .btn{
-    margin-top:10px; padding:12px 22px; font-size:16px; color:#fff; background:var(--brand);
-    border:none; border-radius:999px; cursor:pointer; min-height:44px;
-  }
+  /* 結果：干支と読みを近づける（詰め気味） */
+  .result{ margin-top:10px; font-size:var(--res-kanshi-size); font-weight:700; min-height:30px; }
+  .reading{ margin-top:2px; font-size:var(--res-reading-size); color:#444; min-height:16px; }
 
-  /* 結果エリア（高さ固定で動かない） */
-  .result{ margin-top:12px; font-size:26px; font-weight:700; min-height:32px; }
-  .reading{ margin-top:0; font-size:12px; color:#444; min-height:16px; }
+  /* 〈甲🌳樹木の人〉（サイズ・太さを変数で調整可能） */
+  .persona{
+    margin-top:4px;
+    font-size:var(--persona-size);
+    font-weight:var(--persona-weight);
+    color:var(--persona-color);
+    min-height:18px;
+  }
 
   /* カレンダーへボタン（丸カードの少し下） */
   .nav{ margin-top:4px; }
@@ -148,7 +161,7 @@
       <div class="sub">日干支 checker</div>
 
       <div class="row">
-        <!-- 年月：ひと箱（「2025 年  9 月 ▼」を内包） -->
+        <!-- 年月：ひと箱（「2025 年  9 月 ▼」） -->
         <span class="field ym-box">
           <span class="ym-year" id="ymYear">----</span>
           <span class="ym-suffix">年</span>
@@ -158,17 +171,17 @@
           <input type="month" id="ymInput" />
         </span>
 
-        <!-- 日：ボックス内に「日」も入れる -->
+        <!-- 日：ひと箱（「2 日 ▼」） -->
         <span class="field day-box">
           <select id="day"></select>
           <span class="day-suffix">日</span>
         </span>
       </div>
 
-      <button class="btn" onclick="calculate()">CHECK!</button>
-
+      <!-- 自動更新：ボタンなし -->
       <div class="result" id="result"></div>
       <div class="reading" id="reading"></div>
+      <div class="persona" id="persona"></div>
     </div>
 
     <div class="nav">
@@ -181,13 +194,19 @@
   </div>
 
 <script>
-  /* 干支データ（そのまま） */
+  /* 干支データ */
   const stems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
   const stemsReading = ["きのえ","きのと","ひのえ","ひのと","つちのえ","つちのと","かのえ","かのと","みずのえ","みずのと"];
   const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
   const branchesReading = ["ね","うし","とら","う","たつ","み","うま","ひつじ","さる","とり","いぬ","い"];
 
-  const baseDate  = new Date(1984, 2, 31);
+  /* 十干キャッチ */
+  const stemPersona = {
+    "甲":"🌳樹木の人","乙":"🪻草花の人","丙":"☀️太陽の人","丁":"🔥炎の人","戊":"⛰️山の人",
+    "己":"🌱大地の人","庚":"🪨岩・鉄塊の人","辛":"💍宝石の人","壬":"🌊海・大河の人","癸":"☔️雨の人"
+  };
+
+  const baseDate  = new Date(1984, 2, 31); // 3/31 甲子
   function kanshiIndexFromDate(date){
     const diffDays = Math.floor((date - baseDate) / (1000*60*60*24));
     return (diffDays % 60 + 60) % 60;
@@ -198,6 +217,9 @@
   const ymYear  = document.getElementById('ymYear');
   const ymMonth = document.getElementById('ymMonth');
   const daySel  = document.getElementById('day');
+  const resultEl  = document.getElementById('result');
+  const readingEl = document.getElementById('reading');
+  const personaEl = document.getElementById('persona');
 
   /* 内部状態：年・月（1-12） */
   let curYear, curMonth;
@@ -217,33 +239,42 @@
     ymMonth.textContent = curMonth;
   }
 
-  /* 計算（CHECK!） */
-  function calculate(){
+  /* 結果の更新（干支・読み・〈甲🌳樹木の人〉） */
+  function updateResult(){
     const d = +daySel.value;
     if(!curYear || !curMonth || !d) return;
+
     const date = new Date(curYear, curMonth-1, d);
     const idx  = kanshiIndexFromDate(date);
-    const stem=stems[idx%10], branch=branches[idx%12];
-    const stemR=stemsReading[idx%10], branchR=branchesReading[idx%12];
-    document.getElementById('result').textContent  = stem + branch;
-    document.getElementById('reading').textContent = stemR + branchR;
+
+    const stem   = stems[idx%10];
+    const branch = branches[idx%12];
+    const stemR  = stemsReading[idx%10];
+    const branchR= branchesReading[idx%12];
+
+    resultEl.textContent  = stem + branch;              // 甲戌
+    readingEl.textContent = stemR + branchR;            // きのえいぬ（←ひらがなOK）
+
+    const tag = stemPersona[stem] ? `〈${stem}${stemPersona[stem]}〉` : "";
+    personaEl.textContent = tag;                        // 〈甲🌳樹木の人〉
   }
 
-  /* month入力：変更で年・月を反映（iOSのホイール） */
+  /* iOSのmonthホイール対応 */
   function supportsMonth(){
     const i = document.createElement('input');
     i.setAttribute('type','month');
     return i.type === 'month';
   }
+
+  /* 年月変更 → 自動更新 */
   if(supportsMonth()){
     ymInput.addEventListener('change', ()=>{
       if(!ymInput.value) return; // "YYYY-MM"
       const [y,m] = ymInput.value.split('-').map(v=>+v);
       curYear = y; curMonth = m;
-      updateYmLabel(); updateDays();
+      updateYmLabel(); updateDays(); updateResult();
     });
   }else{
-    /* フォールバック：テキスト YYYY-MM */
     ymInput.type = 'text';
     ymInput.placeholder = 'YYYY-MM';
     ymInput.addEventListener('change', ()=>{
@@ -252,12 +283,15 @@
       if(ok){
         const [y,m] = v.split('-').map(v=>+v);
         curYear = y; curMonth = m;
-        updateYmLabel(); updateDays();
+        updateYmLabel(); updateDays(); updateResult();
       }
     });
   }
 
-  /* 初期：今日でセット＆表示 */
+  /* 日変更 → 自動更新 */
+  daySel.addEventListener('change', updateResult);
+
+  /* 初期：今日でセット＆即表示 */
   (function(){
     const t=new Date();
     curYear  = t.getFullYear();
@@ -269,11 +303,8 @@
     for(let d=1; d<=31; d++){ daySel.add(new Option(d, d)); }
     updateDays();
     daySel.value = t.getDate();
-    calculate();
+    updateResult();   // 初期表示
   })();
-
-  /* “日”変更時：結果はCHECK!で */
-  daySel.addEventListener('change', ()=>{ /* no-op */ });
 </script>
 </body>
 </html>
