@@ -83,15 +83,19 @@
 
   /* 〈 / 〉：左右端（見た目は記号だけ、タップ領域は広め） */
   .edge{
-    position:absolute; top:50%; transform:translateY(-50%);
-    background:transparent; border:none; cursor:pointer;
-    font-size:20px; line-height:1; color:var(--ink);
-    padding:12px; user-select:none;
-  }
-  .edge-left{ left:0; }
-  .edge-right{ right:0; }
-  .edge:active{ transform:translateY(-50%) scale(.96); }
+  position:absolute; top:50%; transform:translateY(-50%);
+  background:transparent; border:none; cursor:pointer;
+  font-size:22px; line-height:1; color:var(--ink);
+  padding:12px; user-select:none;
+  transition:transform 0.15s ease; /* opacity は削除 */
+}
+.edge-left{ left:0; }
+.edge-right{ right:0; }
 
+/* 押した瞬間：縮むだけ */
+.edge:active{
+  transform:translateY(-50%) scale(0.85);
+}
   /* カレンダー表 */
   .cal{
     width:100%;
