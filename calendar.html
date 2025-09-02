@@ -8,13 +8,13 @@
   :root{
     --ink:#333;
     --grid:#dcdcdc;
-    --sun:#d65a8a;          /* 日曜色（調整OK） */
-    --sat:#3fa9f5;          /* 土曜色（調整OK） */
+    --sun:#fc579c;              /* 日曜色 */
+    --sat:#6585d0;              /* 土曜色 */
     --sub:#555;
     --bgglass:rgba(255,255,255,.55);
-    --todaybg:rgba(200,242,200,0.5); /* 今日セル背景（淡いグリーン、透明度はここで調整） */
-    --nav-btn-bg:#1e90ff;   /* ナビボタン背景（調整OK） */
-    --nav-btn-fg:#fff;      /* ナビボタン文字色（調整OK） */
+    --todaybg:rgba(158,209,197,0.775); /* 今日セル背景（淡グリーン） */
+    --nav-btn-bg:#3b66bce2;     /* ナビボタン背景 */
+    --nav-btn-fg:#fff;          /* ナビボタン文字色 */
   }
 
   html,body{margin:0;padding:0;color:var(--ink);-webkit-text-size-adjust:100%;}
@@ -46,12 +46,12 @@
     font-size:22px; margin:2px 0 8px;
   }
 
-  /* 月タイトル行（左：9 月 + タブ／右：年） */
+  /* 月タイトル行（左：9 月 + 月/年ピッカー／右：年） */
   .monthbar{
     display:flex; align-items:center; justify-content:space-between;
     margin:0 4px 6px;
   }
-  .monthbox{ display:flex; align-items:baseline; gap:6px; }
+  .monthbox{ display:flex; align-items:center; gap:8px; }
   .month{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:800; display:flex; align-items:baseline; gap:4px;
@@ -63,25 +63,11 @@
     font-weight:600; font-size:16px; opacity:.85;
   }
 
-  /* ▼タブ（年月ピッカー開閉） */
-  .picker-toggle{
-    border:1px solid #cfd6e0; background:#fff; border-radius:8px;
-    padding:6px 10px; font-size:12px; cursor:pointer;
-    display:flex; align-items:center; gap:6px;
-  }
-  .picker-toggle .caret{ font-size:10px; transform:translateY(-1px); }
-
-  .picker{ margin:8px 0 4px; display:none; }
-  .picker.open{ display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap; }
-  .picker select{
-    appearance:none; -webkit-appearance:none; outline:none;
-    font-size:14px; color:#1e90ff;
+  /* 月/年ピッカー（iOSでホイール） */
+  .month-input{
+    font-size:16px;
     border:1px solid #cfd6e0; border-radius:8px; background:#fff;
-    padding:6px 22px 6px 8px;
-  }
-  .picker .apply{
-    padding:8px 16px; border:none; border-radius:999px; cursor:pointer;
-    background:var(--nav-btn-bg); color:var(--nav-btn-fg); font-size:14px;
+    padding:6px 10px;
   }
 
   /* カレンダー表 */
@@ -110,12 +96,11 @@
   }
   .cal tr td:last-child{ border-right:none; }
 
-  /* 左上の日付（常に固定） */
+  /* 左上の日付（固定） */
   .daynum{
     font-weight:700; font-size:12px; line-height:1;
     position:absolute; left:6px; top:6px;
   }
-
   .kanshi{
     margin-top:18px;
     font-size:18px; font-weight:700;
@@ -123,16 +108,13 @@
   .reading{
     font-size:10px; color:var(--sub); margin-top:2px; /* かなり小さめ */
   }
-
   .empty{ background:#fafafa; }
 
   /* 今日のセル：背景全体に淡いグリーン */
   .cal td.today{ background:var(--todaybg); }
 
-  /* 相互ナビ（2ボタン） */
-  .nav{
-    margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
-  }
+  /* ナビ（チェッカーへ） */
+  .nav{ margin-top:12px; }
   .nav .btn{
     text-decoration:none; font-size:14px;
     background:var(--nav-btn-bg); color:var(--nav-btn-fg);
@@ -159,18 +141,10 @@
           <div class="month">
             <span class="m-num" id="mmNum">9</span><span class="m-kanji">月</span>
           </div>
-          <button class="picker-toggle" id="togglePicker" aria-expanded="false" aria-controls="picker">
-            <span>年月</span><span class="caret">▼</span>
-          </button>
+          <!-- ここをタップするとiOSは“くるくる”が出ます -->
+          <input type="month" id="monthInput" class="month-input" />
         </div>
         <div class="year" id="yy">2025</div>
-      </div>
-
-      <!-- 年月ピッカー -->
-      <div class="picker" id="picker">
-        <select id="yearSel"></select>
-        <select id="monthSel"></select>
-        <button class="apply" id="applyBtn">適用</button>
       </div>
 
       <table class="cal" id="calendar">
@@ -182,10 +156,9 @@
         <tbody id="cal-body"></tbody>
       </table>
 
-      <!-- 相互ナビ -->
+      <!-- ナビ：チェッカーへ -->
       <div class="nav">
         <a class="btn" href="index.html">日干支チェッカーへ →</a>
-        <a class="btn" href="calendar.html">日干支カレンダーへ →</a>
       </div>
     </div>
   </div>
@@ -203,7 +176,6 @@
     return (diffDays % 60 + 60) % 60;
   }
 
-  /* カレンダー描画 */
   function renderCalendar(year, month){ // month: 1-12
     document.getElementById('yy').textContent = year;
     document.getElementById('mmNum').textContent = month;
@@ -255,31 +227,41 @@
     }
   }
 
-  /* 年月ピッカー */
-  const ySel = document.getElementById('yearSel');
-  const mSel = document.getElementById('monthSel');
-  for(let y=1950; y<=2060; y++) ySel.add(new Option(y,y));
-  for(let m=1; m<=12; m++) mSel.add(new Option(m,m));
+  /* month入力：変更した瞬間に反映 */
+  const monthInput = document.getElementById('monthInput');
 
-  const toggle = document.getElementById('togglePicker');
-  const picker = document.getElementById('picker');
-  toggle.addEventListener('click', ()=>{
-    const open = picker.classList.toggle('open');
-    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
-  document.getElementById('applyBtn').addEventListener('click', ()=>{
-    const y = +ySel.value, m = +mSel.value;
-    renderCalendar(y,m);
-    picker.classList.remove('open');
-    toggle.setAttribute('aria-expanded','false');
-  });
+  function supportsMonth(){
+    const i = document.createElement('input');
+    i.setAttribute('type','month');
+    return i.type === 'month';
+  }
 
-  // 初期：今日の年月で描画 & ピッカー初期値も今日に
+  if(supportsMonth()){
+    monthInput.addEventListener('change', ()=>{
+      if(!monthInput.value) return; // "YYYY-MM"
+      const [y,m] = monthInput.value.split('-').map(v=>+v);
+      renderCalendar(y,m);
+    });
+  }else{
+    /* フォールバック（古いブラウザ用） */
+    monthInput.setAttribute('placeholder','YYYY-MM');
+    monthInput.addEventListener('change', ()=>{
+      const m = monthInput.value.trim();
+      const ok = /^\d{4}-(0[1-9]|1[0-2])$/.test(m);
+      if(ok){
+        const [y,mo] = m.split('-').map(v=>+v);
+        renderCalendar(y,mo);
+      }
+    });
+  }
+
+  // 初期：今日で描画 & monthの初期値も今日に
   (function(){
     const t = new Date();
     renderCalendar(t.getFullYear(), t.getMonth()+1);
-    ySel.value = t.getFullYear();
-    mSel.value = t.getMonth()+1;
+    const yyyy = t.getFullYear();
+    const mm = String(t.getMonth()+1).padStart(2,'0');
+    monthInput.value = `${yyyy}-${mm}`;
   })();
 </script>
 </body>
