@@ -6,12 +6,13 @@
 <title>日干支 checker</title>
 <style>
   :root{
-    --ink:#333; --brand:#ff68b6; --white:#fff; --blue:#1e90ff;
-    /* カレンダーに合わせたナビボタン色 */
-    --nav-btn-bg:#3b66bce2;  /* ← カレンダーと同色 */
-    --nav-btn-fg:#fff;
+    --ink:#333; --brand:#ff68b6; --white:#fff;
+    --field-fg:#555;         /* 入力系の文字色（グレー） */
+    --border:#cfd6e0;
+    --bgglass:rgba(255,255,255,.6);
+    --nav-btn-bg:#3b66bce2;  --nav-btn-fg:#fff;  /* カレンダーと揃え */
   }
-  html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); }
+  html,body{ margin:0; padding:0; height:100%; color:var(--ink); -webkit-text-size-adjust:100%; }
   body{
     font-family:'Hiragino Kaku Gothic ProN', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
     text-align:center;
@@ -24,7 +25,7 @@
 
   /* 丸カード */
   .card{
-    background:rgba(255,255,255,.6);
+    background:var(--bgglass);
     border-radius:50%;
     width:260px; height:260px;
     box-shadow:0 8px 24px rgba(0,0,0,.1);
@@ -32,34 +33,44 @@
     padding:18px;
   }
 
-  /* ロゴ & サブタイトル（Futura風） */
-  .logo{
-    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:900; font-size:34px; letter-spacing:.02em; margin:0;
-  }
-  .sub{
-    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:400;   /* 細めのまま */
-    font-size:17px;
-    margin:2px 0 0;
-  }
+  /* ロゴ＆サブ */
+  .logo{ font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:900; font-size:34px; margin:0; letter-spacing:.02em; }
+  .sub { font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:400; font-size:17px; margin:2px 0 0; }
 
-  /* 入力行 */
-  .row{ display:flex; gap:6px; align-items:center; justify-content:center; margin-top:10px; }
-  .sel{ position:relative; display:inline-block; }
+  /* 入力行（年＋月の長箱＋日） */
+  .row{ display:flex; gap:8px; align-items:center; justify-content:center; margin-top:10px; }
+
+  /* ベースselect */
   select{
     appearance:none; -webkit-appearance:none; outline:none;
-    font-size:16px; color:var(--blue);
-    border:1px solid #cfd6e0; background:rgba(255,255,255,.96);
-    border-radius:8px; padding:6px 22px 6px 8px; line-height:1.1;
+    font-size:16px; color:var(--field-fg);
+    border:1px solid var(--border); background:rgba(255,255,255,.96);
+    border-radius:8px; line-height:1.1;
   }
-  .sel-year select{ width:82px; }
-  .sel-month select, .sel-day select{ width:60px; }
+
+  /* 年＋月 合体ボックス */
+  .ym-group{
+    position:relative; display:inline-flex; align-items:baseline; gap:8px;
+    border:1px solid var(--border); border-radius:8px; background:#fff;
+    padding:6px 28px 6px 8px;  /* 右にカーソル用の余白 */
+  }
+  .ym-group .y{ width:88px; border:0; padding:0; background:transparent; }
+  .ym-group .sep{ color:var(--field-fg); font-size:14px; }  /* 「年」 */
+  .ym-group .m{ width:60px; border:0; padding:0 16px 0 0; background:transparent; } /* 右に▼余白 */
+  .ym-group .caret{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-size:10px; color:#7aa8ff; pointer-events:none;
+  }
+  /* 外側ユニット（ボックスの外に付ける「月」「日」） */
+  .unit{ font-weight:600; font-size:13px; color:#444; }
+
+  /* 日だけ単独ボックス（サイズは従来どおり） */
+  .sel{ position:relative; display:inline-block; }
+  .sel-day select{ width:60px; padding:6px 22px 6px 8px; }
   .sel::after{
     content:"▼"; position:absolute; right:8px; top:50%; transform:translateY(-52%);
     font-size:10px; color:#7aa8ff; pointer-events:none;
   }
-  .unit{ font-weight:600; font-size:13px; color:#444; }
 
   /* CHECKボタン */
   .btn{
@@ -67,7 +78,7 @@
     border:none; border-radius:999px; cursor:pointer; min-height:44px;
   }
 
-  /* 結果エリア（高さ固定で動かないように） */
+  /* 結果は高さ固定でレイアウトが動かないように */
   .result{ margin-top:12px; font-size:26px; font-weight:700; min-height:32px; }
   .reading{ margin-top:0; font-size:12px; color:#444; min-height:16px; }
 
@@ -79,19 +90,12 @@
     padding:8px 14px; border-radius:999px; display:inline-block;
   }
 
-  /* OFUSEボタン（画面いちばん下に小さく固定） */
-  .support-footer{
-    position:fixed; left:0; right:0; bottom:8px; z-index:10;
-    text-align:center;
-  }
+  /* OFUSE（画面最下部に小さく固定） */
+  .support-footer{ position:fixed; left:0; right:0; bottom:8px; text-align:center; }
   .support-btn{
     text-decoration:none; font-size:12px; font-weight:600;
     color:#ff7f50; background:transparent; border:2px solid #ff7f50;
     padding:6px 10px; border-radius:10px; display:inline-block; opacity:.9;
-  }
-
-  @media (max-width:420px){
-    .support-btn{ font-size:11px; padding:5px 9px; }
   }
 </style>
 </head>
@@ -99,13 +103,21 @@
   <div class="wrap">
     <div class="card">
       <h1 class="logo">ilo.ilo</h1>
-      <!-- タイトル差し替え：日干支 checker -->
       <div class="sub">日干支 checker</div>
 
       <div class="row">
-        <span class="sel sel-year"><select id="year"></select></span><span class="unit">年</span>
-        <span class="sel sel-month"><select id="month"></select></span><span class="unit">月</span>
-        <span class="sel sel-day"><select id="day"></select></span><span class="unit">日</span>
+        <!-- 年＋月：ひとつの長いボックス（中に 年 と 月 の数字＆▼。月の「文字」は外） -->
+        <span class="ym-group">
+          <select id="year" class="y"></select>
+          <span class="sep">年</span>
+          <select id="month" class="m"></select>
+          <span class="caret">▼</span>
+        </span>
+        <span class="unit">月</span>
+
+        <!-- 日：従来どおりの小さめボックス -->
+        <span class="sel sel-day"><select id="day"></select></span>
+        <span class="unit">日</span>
       </div>
 
       <button class="btn" onclick="calculate()">CHECK!</button>
@@ -114,13 +126,11 @@
       <div class="reading" id="reading"></div>
     </div>
 
-    <!-- 丸カードの少し下に配置 -->
     <div class="nav">
       <a class="to-calendar" href="calendar.html" rel="noopener">日干支カレンダーへ →</a>
     </div>
   </div>
 
-  <!-- 画面最下部に小さく固定表示 -->
   <div class="support-footer">
     <a class="support-btn" href="https://ofuse.me/izuiloilo" target="_blank" rel="noopener">izuを応援する</a>
   </div>
@@ -138,16 +148,16 @@
   const monthSel = document.getElementById('month');
   const daySel   = document.getElementById('day');
 
-  for(let y=1950; y<=2060; y++){ const o=new Option(y,y); yearSel.add(o); }
-  for(let m=1; m<=12; m++){ const o=new Option(m,m); monthSel.add(o); }
-  for(let d=1; d<=31; d++){ const o=new Option(d,d); daySel.add(o); }
+  for(let y=1950; y<=2060; y++){ yearSel.add(new Option(y, y)); }
+  for(let m=1; m<=12; m++){ monthSel.add(new Option(m, m)); }
+  for(let d=1; d<=31; d++){ daySel.add(new Option(d, d)); }
 
   function updateDays(){
     const y = +yearSel.value, m = +monthSel.value;
     const last = new Date(y, m, 0).getDate();
     const keep = +daySel.value || 1;
     daySel.innerHTML='';
-    for(let d=1; d<=last; d++){ daySel.add(new Option(d,d)); }
+    for(let d=1; d<=last; d++){ daySel.add(new Option(d, d)); }
     daySel.value = Math.min(keep, last);
   }
 
@@ -167,13 +177,13 @@
     document.getElementById('reading').textContent = stemR + branchR;
   }
 
-  // 初期表示：今日を選んで結果も表示
+  // 初期表示：今日で選択＆結果表示
   (function(){
     const t=new Date();
-    yearSel.value=Math.min(Math.max(t.getFullYear(),1950),2060);
-    monthSel.value=t.getMonth()+1;
+    yearSel.value = Math.min(Math.max(t.getFullYear(),1950),2060);
+    monthSel.value = t.getMonth()+1;
     updateDays();
-    daySel.value=t.getDate();
+    daySel.value = t.getDate();
     calculate();
   })();
 
