@@ -37,6 +37,7 @@
     box-shadow:0 2px 10px rgba(0,0,0,.08);
     padding:14px 14px 18px;
     backdrop-filter:blur(2px);
+    position:relative; /* ← 端ナビをこの中で絶対配置 */
   }
 
   /* タイトル */
@@ -46,30 +47,23 @@
     font-size:22px; margin:2px 0 8px;
   }
 
-  /* 月タイトル行（左：月表示＋ホイール＋〈〉／右：年） */
+  /* 月タイトル行（左：月＋ホイール、右：年＝今回は非表示） */
   .monthbar{
     display:flex; align-items:center; justify-content:space-between;
     margin:0 4px 6px;
   }
   .monthbox{ display:flex; align-items:center; gap:8px; }
-
   .month{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:800; display:flex; align-items:baseline; gap:4px;
   }
-  .m-num{ font-size:56px; line-height:1; }   /* ← 数字を約2倍に */
-  .m-kanji{ font-size:14px; line-height:1; } /* 数字の約1/4〜1/3に抑えると映える */
+  .m-num{ font-size:56px; line-height:1; }   /* 大きめ */
+  .m-kanji{ font-size:14px; line-height:1; }
 
   .year{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:600; font-size:16px; opacity:.85;
-  }
-
-  /* 〈 〉の月送りボタン（最小限の見た目） */
-  .chev{
-    border:1px solid #cfd6e0; background:#fff; border-radius:8px;
-    padding:4px 8px; font-size:14px; line-height:1; cursor:pointer;
-    user-select:none;
+    display:none; /* ← 年表示を隠す。復活したい場合はこの行を消す/コメントアウト */
   }
 
   /* 月/年ピッカー（iOSでホイール） */
@@ -78,6 +72,18 @@
     border:1px solid #cfd6e0; border-radius:8px; background:#fff;
     padding:6px 10px;
   }
+
+  /* 〈 / 〉：記号だけ表示（見た目ミニマル）、でもタップ領域は広め */
+  .edge{
+    position:absolute; top:64px; /* 月見出しの高さに合わせて配置 */
+    padding:12px;               /* タップ領域（44px相当） */
+    background:transparent; border:none; cursor:pointer;
+    font-size:20px; line-height:1; color:var(--ink);
+    user-select:none;
+  }
+  .edge:active{ transform:scale(.96); }
+  .edge-left{  left:4px; }
+  .edge-right{ right:4px; }
 
   /* カレンダー表 */
   .cal{
@@ -115,7 +121,7 @@
     font-size:18px; font-weight:700;
   }
   .reading{
-    font-size:10px; color:var(--sub); margin-top:2px; /* かなり小さめ */
+    font-size:10px; color:var(--sub); margin-top:2px;
   }
   .empty{ background:#fafafa; }
 
@@ -134,9 +140,8 @@
     .cal td{ height:72px; }
     .kanshi{ font-size:16px; }
     .brand{ font-size:20px; }
-    .m-num{ font-size:46px; }   /* モバイルでは少しだけ小さく */
+    .m-num{ font-size:46px; }
     .m-kanji{ font-size:13px; }
-    .year{ font-size:14px; }
   }
 </style>
 </head>
@@ -147,16 +152,18 @@
 
       <div class="monthbar">
         <div class="monthbox">
-          <button class="chev" id="prevBtn" aria-label="前の月へ">〈</button>
           <div class="month">
             <span class="m-num" id="mmNum">9</span><span class="m-kanji">月</span>
           </div>
           <!-- タップでiOSホイールが出る -->
           <input type="month" id="monthInput" class="month-input" />
-          <button class="chev" id="nextBtn" aria-label="次の月へ">〉</button>
         </div>
         <div class="year" id="yy">2025</div>
       </div>
+
+      <!-- 端の月送り（記号だけ） -->
+      <button class="edge edge-left"  id="prevBtn" aria-label="前の月へ">〈</button>
+      <button class="edge edge-right" id="nextBtn" aria-label="次の月へ">〉</button>
 
       <table class="cal" id="calendar">
         <thead>
@@ -192,6 +199,7 @@
   function renderCalendar(year, month){
     currentYear = year; currentMonth = month;
 
+    // 年表示（今は非表示だけど、値は更新しておく）
     document.getElementById('yy').textContent = year;
     document.getElementById('mmNum').textContent = month;
 
@@ -267,7 +275,7 @@
     });
   }
 
-  /* 〈 〉で月送り */
+  /* 端ボタンで月送り */
   document.getElementById('prevBtn').addEventListener('click', ()=>{
     let y = currentYear, m = currentMonth - 1;
     if(m < 1){ m = 12; y--; }
