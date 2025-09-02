@@ -8,12 +8,12 @@
   :root{
     --ink:#333;
     --grid:#dcdcdc;
-    --sun:#fc579c;              /* 日曜色 */
-    --sat:#6585d0;              /* 土曜色 */
+    --sun:#fc579c;              
+    --sat:#6585d0;              
     --sub:#555;
     --bgglass:rgba(255,255,255,.55);
-    --todaybg:rgba(158,209,197,0.775); /* 今日セル */
-    --nav-btn-bg:#3b66bce2;     /* ナビボタン */
+    --todaybg:rgba(158,209,197,0.775); 
+    --nav-btn-bg:#3b66bce2;     
     --nav-btn-fg:#fff;
   }
 
@@ -37,7 +37,7 @@
     box-shadow:0 2px 10px rgba(0,0,0,.08);
     padding:14px 14px 18px;
     backdrop-filter:blur(2px);
-    position:relative; /* 端ナビの基準 */
+    position:relative;
   }
 
   .brand{
@@ -46,7 +46,6 @@
     font-size:22px; margin:2px 0 8px;
   }
 
-  /* ヘッダ行：左右端に〈〉、中央に [年][月][年月▼] を水平配置 */
   .monthbar{
     position:relative;
     display:flex; justify-content:center; align-items:center;
@@ -57,45 +56,43 @@
   }
   .year{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:600; font-size:16px; opacity:.85; /* 小さめのまま */
+    font-weight:600; font-size:16px; opacity:.85;
   }
   .month{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:800; display:inline-flex; align-items:baseline; gap:4px;
   }
-  .m-num{ font-size:56px; line-height:1; }   /* 大きい9 */
-  .m-kanji{ font-size:14px; line-height:1; } /* 小さめの「月」 */
+  .m-num{ font-size:56px; line-height:1; }
+  .m-kanji{ font-size:14px; line-height:1; }
 
-  /* 年月▼の見た目（ボタン風の小箱） */
+  /* 年月▼ボックス（小さめ修正版） */
   .monthpick{
     position:relative; display:inline-block;
-    border:1px solid #cfd6e0; border-radius:8px; background:#fff;
-    padding:2px 6px; min-width:50px; text-align:center;
-    font-size:12px; color:#333;
+    border:1px solid #cfd6e0; border-radius:6px; background:#fff;
+    padding:2px 6px;
+    min-width:50px;
+    text-align:center;
+    font-size:11px; color:#333;
   }
-  .monthpick .label{ pointer-events:none; } /* 表示用テキスト */
-  /* ホイール用の実体 input：ボックス全体を覆う透明入力（スマホで確実に反応） */
+  .monthpick .label{ pointer-events:none; }
   .monthpick input[type="month"]{
     position:absolute; inset:0; width:100%; height:100%;
     opacity:0; border:0; background:transparent; appearance:none;
     -webkit-appearance:none; cursor:pointer;
   }
 
-  /* 〈 / 〉：左右端（見た目は記号だけ、タップ領域は広め） */
+  /* ◀︎ / ▶︎ ボタン */
   .edge{
-  position:absolute; top:50%; transform:translateY(-50%);
-  background:transparent; border:none; cursor:pointer;
-  font-size:22px; line-height:1; color:var(--ink);
-  padding:12px; user-select:none;
-  transition:transform 0.15s ease; /* opacity は削除 */
-}
-.edge-left{ left:0; }
-.edge-right{ right:0; }
+    position:absolute; top:50%; transform:translateY(-50%);
+    background:transparent; border:none; cursor:pointer;
+    font-size:22px; line-height:1; color:var(--ink);
+    padding:12px; user-select:none;
+    transition:transform 0.15s ease;
+  }
+  .edge-left{ left:0; }
+  .edge-right{ right:0; }
+  .edge:active{ transform:translateY(-50%) scale(0.85); }
 
-/* 押した瞬間：縮むだけ */
-.edge:active{
-  transform:translateY(-50%) scale(0.85);
-}
   /* カレンダー表 */
   .cal{
     width:100%;
@@ -131,7 +128,6 @@
   .empty{ background:#fafafa; }
   .cal td.today{ background:var(--todaybg); }
 
-  /* ナビ（チェッカーへ）— 太さ600で統一 */
   .nav{ margin-top:12px; }
   .nav .btn{
     text-decoration:none; font-size:14px; font-weight:600;
@@ -154,20 +150,19 @@
       <div class="brand">ilo.ilo 干支calendar</div>
 
       <div class="monthbar">
-        <button class="edge edge-left"  id="prevBtn" aria-label="前の月へ">〈</button>
+        <button class="edge edge-left"  id="prevBtn" aria-label="前の月へ">◀︎</button>
 
         <div class="centerhead">
           <span class="year" id="yy">2025</span>
           <span class="month"><span class="m-num" id="mmNum">9</span><span class="m-kanji">月</span></span>
 
-          <!-- 小さな“年月▼”ボックス（中に透明な input[type=month] を重ねる） -->
           <span class="monthpick">
             <span class="label">年月 ▼</span>
             <input type="month" id="monthInput" />
           </span>
         </div>
 
-        <button class="edge edge-right" id="nextBtn" aria-label="次の月へ">〉</button>
+        <button class="edge edge-right" id="nextBtn" aria-label="次の月へ">▶︎</button>
       </div>
 
       <table class="cal" id="calendar">
@@ -186,19 +181,18 @@
   </div>
 
 <script>
-  /* 干支データ */
   const stems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
   const stemsReading = ["きのえ","きのと","ひのえ","ひのと","つちのえ","つちのと","かのえ","かのと","みずのえ","みずのと"];
   const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
   const branchesReading = ["ね","うし","とら","う","たつ","み","うま","ひつじ","さる","とり","いぬ","い"];
 
-  const baseDate = new Date(1984, 2, 31); // 甲子
+  const baseDate = new Date(1984, 2, 31);
   function kanshiIndexFromDate(date){
     const diffDays = Math.floor((date - baseDate) / (1000*60*60*24));
     return (diffDays % 60 + 60) % 60;
   }
 
-  let currentYear, currentMonth; // 1-12
+  let currentYear, currentMonth;
   const yy = document.getElementById('yy');
   const mmNum = document.getElementById('mmNum');
   const calBody = document.getElementById('cal-body');
@@ -214,7 +208,6 @@
     const startWeek = first.getDay();
 
     calBody.innerHTML = '';
-
     let day = 1;
     for(let r=0; r<6; r++){
       const tr = document.createElement('tr');
@@ -255,20 +248,13 @@
     }
   }
 
-  /* month入力：変更で即反映（可視ボックス直下の透明inputがトリガー） */
-  function supportsMonth(){
-    const i = document.createElement('input');
-    i.setAttribute('type','month');
-    return i.type === 'month';
-  }
-  if(supportsMonth()){
+  if(monthInput.type === "month"){
     monthInput.addEventListener('change', ()=>{
-      if(!monthInput.value) return; // "YYYY-MM"
+      if(!monthInput.value) return;
       const [y,m] = monthInput.value.split('-').map(v=>+v);
       renderCalendar(y,m);
     });
-  }else{
-    /* 旧ブラウザ用フォールバック */
+  } else {
     monthInput.type = 'text';
     monthInput.placeholder = 'YYYY-MM';
     monthInput.addEventListener('change', ()=>{
@@ -281,27 +267,25 @@
     });
   }
 
-  /* 端ボタンで月送り（inputの値も同期） */
   document.getElementById('prevBtn').addEventListener('click', ()=>{
     let y = currentYear, m = currentMonth - 1;
     if(m < 1){ m = 12; y--; }
     renderCalendar(y,m);
-    if(supportsMonth()){ monthInput.value = `${y}-${String(m).padStart(2,'0')}`; }
+    if(monthInput.type==="month"){ monthInput.value = `${y}-${String(m).padStart(2,'0')}`; }
   });
   document.getElementById('nextBtn').addEventListener('click', ()=>{
     let y = currentYear, m = currentMonth + 1;
     if(m > 12){ m = 1; y++; }
     renderCalendar(y,m);
-    if(supportsMonth()){ monthInput.value = `${y}-${String(m).padStart(2,'0')}`; }
+    if(monthInput.type==="month"){ monthInput.value = `${y}-${String(m).padStart(2,'0')}`; }
   });
 
-  // 初期：今日で描画 & month初期値も今日に
   (function(){
     const t = new Date();
     const yyyy = t.getFullYear();
     const mm = t.getMonth()+1;
     renderCalendar(yyyy, mm);
-    if(supportsMonth()){
+    if(monthInput.type==="month"){
       monthInput.value = `${yyyy}-${String(mm).padStart(2,'0')}`;
     }
   })();
