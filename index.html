@@ -3,207 +3,220 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>日干支＆calendar</title>
+<title>ilo.ilo calendar</title>
 <style>
-  :root{ --ink:#333; --brand:#ff68b6; --white:#fff; --blue:#1e90ff; }
-  html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); }
+  :root{
+    --ink:#333;
+    --grid:#dcdcdc;                /* マス目の細い線 */
+    --sun:#d65a8a;                 /* 日曜（濃いピンク系）←後で自由に調整OK */
+    --sat:#2a82c9;                 /* 土曜（濃いめの水色）←後で自由に調整OK */
+    --sub:#555;                    /* 読み仮名の色 */
+    --bgglass:rgba(255,255,255,.55);/* 透けた四角 */
+  }
+
+  html,body{margin:0;padding:0;color:var(--ink);-webkit-text-size-adjust:100%;}
   body{
     font-family:'Hiragino Kaku Gothic ProN', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
-    text-align:center;
     background:url('iloiloback.jpg') no-repeat center/cover;
-  }
-  .wrap{
-    min-height:100svh; padding:24px 16px calc(24px + env(safe-area-inset-bottom));
-    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px;
-  }
-
-  /* 丸カード */
-  .card{
-    background:rgba(255,255,255,.6);
-    border-radius:50%;
-    width:260px; height:260px;
-    box-shadow:0 8px 24px rgba(0,0,0,.1);
-    display:flex; flex-direction:column; justify-content:center; align-items:center;
-    padding:18px;
-  }
-
-  /* ロゴ & サブタイトル（Futura風） */
-  .logo{
-    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:900; font-size:34px; letter-spacing:.02em; margin:0;
-  }
-  .sub{
-    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:400;   /* 細め */
-    font-size:17px;
-    margin:2px 0 0;
-  }
-
-  /* 入力行 */
-  .row{ display:flex; gap:6px; align-items:center; justify-content:center; margin-top:10px; }
-  .sel{ position:relative; display:inline-block; }
-  select{
-    appearance:none; -webkit-appearance:none; outline:none;
-    font-size:16px; color:var(--blue);
-    border:1px solid #cfd6e0; background:rgba(255,255,255,.96);
-    border-radius:8px; padding:6px 22px 6px 8px; line-height:1.1;
-  }
-  .sel-year select{ width:82px; }
-  .sel-month select, .sel-day select{ width:60px; }
-  .sel::after{
-    content:"▼"; position:absolute; right:8px; top:50%; transform:translateY(-52%);
-    font-size:10px; color:#7aa8ff; pointer-events:none;
-  }
-  .unit{ font-weight:600; font-size:13px; color:#444; }
-
-  /* CHECKボタン（ピル型） */
-  .btn{
-    margin-top:10px; padding:12px 22px; font-size:16px; color:#fff; background:var(--brand);
-    border:none; border-radius:999px; cursor:pointer; min-height:44px;
-  }
-
-  /* 結果エリア（高さ確保でレイアウトのガタつき防止） */
-  .result{ margin-top:12px; font-size:26px; font-weight:700; min-height:32px; }
-  .reading{ margin-top:0; font-size:12px; color:#444; min-height:16px; }
-
-  /* ▼ その月の干支一覧（追加） */
-  .month-kanshi{
-    max-width:340px;
-    margin:6px auto 0;
-    background:rgba(255,255,255,.55);
-    border-radius:12px;
-    padding:10px 12px;
-    box-shadow:0 2px 10px rgba(0,0,0,.06);
-    text-align:left;
-    font-size:14px;
-    line-height:1.5;
-  }
-  .month-kanshi .mk-title{
-    font-weight:700;
     text-align:center;
-    margin:0 0 6px;
   }
-  .month-kanshi ul{
-    list-style:none;
-    margin:0;
-    padding:0;
-    columns:2;
-  }
-  @media (max-width:360px){ .month-kanshi ul{ columns:1; } }
-  .month-kanshi li{ break-inside:avoid; padding:2px 0; }
-  .month-kanshi .d{
-    display:inline-block; width:2.2em; color:#333; font-variant-numeric:tabular-nums;
-  }
-  .month-kanshi .k{ font-weight:700; margin-left:4px; }
-  .month-kanshi .r{ color:#555; margin-left:4px; font-size:12px; }
 
-  /* OFUSEボタン（アウトライン角丸四角） */
-  .support-btn{
-    margin-top:6px; text-decoration:none; font-size:14px; font-weight:600;
-    color:#ff7f50; background:transparent; border:2px solid #ff7f50;
-    padding:8px 14px; border-radius:10px; display:inline-block;
+  /* 透けた四角のカード（そのままOK） */
+  .wrap{
+    min-height:100svh;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding:24px 16px calc(24px + env(safe-area-inset-bottom));
+    gap:14px;
+  }
+  .card{
+    width: min(720px, 92vw);
+    background: var(--bgglass);
+    border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+    padding:14px 14px 18px;
+    backdrop-filter: blur(2px);
+  }
+
+  /* 上部見出し */
+  .brand{
+    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
+    font-weight:900; letter-spacing:.02em;
+    font-size:22px; margin:2px 0 8px;
+  }
+
+  /* 月タイトル行：左に「9月」／右に年 */
+  .monthbar{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin:0 4px 6px;
+  }
+  .monthbar .month{
+    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
+    font-weight:800; font-size:28px;
+  }
+  .monthbar .year{
+    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
+    font-weight:600; font-size:12px; opacity:.8;
+  }
+
+  /* カレンダー表 */
+  .cal{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+    border:1px solid var(--grid);
+    border-radius:8px; overflow:hidden;
+    background:#fff; /* マスの見やすさ優先で内側は白 */
+  }
+  .cal thead th{
+    font-weight:600; font-size:12px; padding:8px 0;
+    border-bottom:1px solid var(--grid);
+  }
+  .w-sun{ color: var(--sun); }
+  .w-sat{ color: var(--sat); }
+
+  .cal td{
+    height:78px;                 /* スマホで読みやすい高さ */
+    border-right:1px solid var(--grid);
+    border-bottom:1px solid var(--grid);
+    vertical-align:top;
+    padding:6px 6px 4px;
+    position:relative;
+  }
+  .cal tr td:last-child{ border-right:none; }
+
+  /* 日付（左上・小さめ太字） */
+  .daynum{
+    font-weight:700; font-size:12px; line-height:1;
+    position:absolute; left:6px; top:6px;
+  }
+
+  /* 日干支（中央寄せ気味に） */
+  .kanshi{
+    margin-top:18px;
+    font-size:14px; font-weight:700;
+  }
+
+  /* 読み仮名（小さめ） */
+  .reading{
+    font-size:11px; color:var(--sub); margin-top:2px;
+  }
+
+  /* 空白マス（前月/翌月の埋め）も形は保つ */
+  .empty{ background:#fafafa; }
+
+  /* iPhone配慮 */
+  @media (max-width:420px){
+    .cal td{ height:72px; }
+    .kanshi{ font-size:13px; }
+    .brand{ font-size:20px; }
+    .monthbar .month{ font-size:26px; }
   }
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1 class="logo">ilo.ilo</h1>
-      <div class="sub">日干支＆calendar</div>
-
-      <div class="row">
-        <span class="sel sel-year"><select id="year"></select></span><span class="unit">年</span>
-        <span class="sel sel-month"><select id="month"></select></span><span class="unit">月</span>
-        <span class="sel sel-day"><select id="day"></select></span><span class="unit">日</span>
+      <div class="brand">ilo.ilo calendar</div>
+      <div class="monthbar">
+        <div class="month" id="mm">9月</div>
+        <div class="year"  id="yy">2025</div>
       </div>
 
-      <button class="btn" onclick="calculate()">CHECK!</button>
-
-      <div class="result" id="result"></div>
-      <div class="reading" id="reading"></div>
+      <table class="cal" id="calendar">
+        <thead>
+          <tr>
+            <th class="w-sun">日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th class="w-sat">土</th>
+          </tr>
+        </thead>
+        <tbody id="cal-body">
+          <!-- JSで埋め込み -->
+        </tbody>
+      </table>
     </div>
-
-    <!-- ▼ ここに「その月の干支一覧」を表示 -->
-    <div id="month-kanshi" class="month-kanshi"></div>
-
-    <a class="support-btn" href="https://ofuse.me/izuiloilo" target="_blank" rel="noopener">izuを応援する</a>
   </div>
 
 <script>
+  /* 干支データ（既存ロジックを流用） */
   const stems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
   const stemsReading = ["きのえ","きのと","ひのえ","ひのと","つちのえ","つちのと","かのえ","かのと","みずのえ","みずのと"];
   const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
   const branchesReading = ["ね","うし","とら","う","たつ","み","うま","ひつじ","さる","とり","いぬ","い"];
 
-  const baseDate  = new Date(1984, 2, 31);
+  const baseDate  = new Date(1984, 2, 31); // 1984/3/31 = 甲子
   const baseIndex = 0;
-
-  const yearSel  = document.getElementById('year');
-  const monthSel = document.getElementById('month');
-  const daySel   = document.getElementById('day');
-
-  for(let y=1950; y<=2060; y++){ yearSel.add(new Option(y,y)); }
-  for(let m=1; m<=12; m++){ monthSel.add(new Option(m,m)); }
-  for(let d=1; d<=31; d++){ daySel.add(new Option(d,d)); }
-
-  function updateDays(){
-    const y = +yearSel.value, m = +monthSel.value;
-    const last = new Date(y, m, 0).getDate();
-    const keep = +daySel.value || 1;
-    daySel.innerHTML='';
-    for(let d=1; d<=last; d++){ daySel.add(new Option(d,d)); }
-    daySel.value = Math.min(keep, last);
-  }
 
   function kanshiIndexFromDate(date){
     const diffDays = Math.floor((date - baseDate) / (1000*60*60*24));
     return (baseIndex + (diffDays % 60) + 60) % 60;
   }
 
-  // ▼ 月の干支一覧を描画
-  function renderMonthKanshi(year, month){ // month: 1-12
-    const box = document.getElementById('month-kanshi');
+  /* 当月のカレンダーを描画 */
+  function renderCalendar(year, month){ // month: 1-12
+    // 見出し
+    document.getElementById('yy').textContent = year;
+    document.getElementById('mm').textContent = month + '月';
+
+    const first = new Date(year, month-1, 1);
     const lastDay = new Date(year, month, 0).getDate();
+    const startWeek = first.getDay(); // 0=日,6=土
 
-    let html = `<div class="mk-title">${year}年 ${month}月 の干支</div><ul>`;
-    for(let d=1; d<=lastDay; d++){
-      const dt  = new Date(year, month-1, d);
-      const idx = kanshiIndexFromDate(dt);
-      const k   = stems[idx % 10] + branches[idx % 12];
-      const r   = stemsReading[idx % 10] + branchesReading[idx % 12];
-      html += `<li><span class="d">${d}日</span><span class="k">${k}</span><span class="r">（${r}）</span></li>`;
+    const tbody = document.getElementById('cal-body');
+    tbody.innerHTML = '';
+
+    let day = 1;
+    // 6週分用意（当月により5 or 6週）
+    for(let r=0; r<6; r++){
+      const tr = document.createElement('tr');
+
+      for(let c=0; c<7; c++){
+        const td = document.createElement('td');
+
+        // 1行目の先頭空白
+        if(r===0 && c<startWeek){
+          td.className = 'empty';
+          tr.appendChild(td);
+          continue;
+        }
+        // 当月の日付
+        if(day <= lastDay){
+          const date = new Date(year, month-1, day);
+          const idx  = kanshiIndexFromDate(date);
+          const k    = stems[idx % 10] + branches[idx % 12];
+          const rubi = stemsReading[idx % 10] + branchesReading[idx % 12];
+
+          // 曜日別の色（数字のみ軽く色づけ）
+          if(c===0){ td.style.setProperty('color','var(--sun)'); }
+          if(c===6){ td.style.setProperty('color','var(--sat)'); }
+
+          td.innerHTML = `
+            <div class="daynum">${day}</div>
+            <div class="kanshi">${k}</div>
+            <div class="reading">${rubi}</div>
+          `;
+
+          day++;
+        }else{
+          td.className = 'empty';
+        }
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+
+      // すでに全日を描画し、最終行が全て空白なら抜ける
+      if(day > lastDay){
+        // 最終行が全部空白なら削る
+        const isAllEmpty = [...tr.children].every(td => td.classList.contains('empty'));
+        if(isAllEmpty){ tbody.removeChild(tr); }
+        break;
+      }
     }
-    html += `</ul>`;
-    box.innerHTML = html;
   }
 
-  function calculate(){
-    const y = +yearSel.value, m = +monthSel.value, d = +daySel.value;
-    if(!y || !m || !d) return;
-    const date = new Date(y, m-1, d);
-    const idx  = kanshiIndexFromDate(date);
-    const stem=stems[idx%10], branch=branches[idx%12];
-    const stemR=stemsReading[idx%10], branchR=branchesReading[idx%12];
-
-    document.getElementById('result').textContent  = stem + branch;
-    document.getElementById('reading').textContent = stemR + branchR;
-
-    // ▼ 選択された年月の一覧も更新
-    renderMonthKanshi(y, m);
-  }
-
-  // 初期表示：今日を選択して計算＆今月一覧も表示
+  // 初期表示：今日の年月（iPhone基準で軽快に）
   (function(){
-    const t=new Date();
-    yearSel.value=Math.min(Math.max(t.getFullYear(),1950),2060);
-    monthSel.value=t.getMonth()+1;
-    updateDays();
-    daySel.value=t.getDate();
-    calculate(); // 結果と今月一覧を描画
+    const t = new Date();
+    renderCalendar(t.getFullYear(), t.getMonth()+1);
   })();
-
-  yearSel.addEventListener('change', updateDays);
-  monthSel.addEventListener('change', updateDays);
 </script>
 </body>
 </html>
