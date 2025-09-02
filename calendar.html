@@ -46,21 +46,30 @@
     font-size:22px; margin:2px 0 8px;
   }
 
-  /* 月タイトル行（左：9 月 + 月/年ピッカー／右：年） */
+  /* 月タイトル行（左：月表示＋ホイール＋〈〉／右：年） */
   .monthbar{
     display:flex; align-items:center; justify-content:space-between;
     margin:0 4px 6px;
   }
   .monthbox{ display:flex; align-items:center; gap:8px; }
+
   .month{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:800; display:flex; align-items:baseline; gap:4px;
   }
-  .m-num{ font-size:28px; line-height:1; }
-  .m-kanji{ font-size:14px; line-height:1; } /* 数字の約半分サイズ */
+  .m-num{ font-size:56px; line-height:1; }   /* ← 数字を約2倍に */
+  .m-kanji{ font-size:14px; line-height:1; } /* 数字の約1/4〜1/3に抑えると映える */
+
   .year{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:600; font-size:16px; opacity:.85;
+  }
+
+  /* 〈 〉の月送りボタン（最小限の見た目） */
+  .chev{
+    border:1px solid #cfd6e0; background:#fff; border-radius:8px;
+    padding:4px 8px; font-size:14px; line-height:1; cursor:pointer;
+    user-select:none;
   }
 
   /* 月/年ピッカー（iOSでホイール） */
@@ -125,7 +134,7 @@
     .cal td{ height:72px; }
     .kanshi{ font-size:16px; }
     .brand{ font-size:20px; }
-    .m-num{ font-size:26px; }
+    .m-num{ font-size:46px; }   /* モバイルでは少しだけ小さく */
     .m-kanji{ font-size:13px; }
     .year{ font-size:14px; }
   }
@@ -138,11 +147,13 @@
 
       <div class="monthbar">
         <div class="monthbox">
+          <button class="chev" id="prevBtn" aria-label="前の月へ">〈</button>
           <div class="month">
             <span class="m-num" id="mmNum">9</span><span class="m-kanji">月</span>
           </div>
-          <!-- ここをタップするとiOSは“くるくる”が出ます -->
+          <!-- タップでiOSホイールが出る -->
           <input type="month" id="monthInput" class="month-input" />
+          <button class="chev" id="nextBtn" aria-label="次の月へ">〉</button>
         </div>
         <div class="year" id="yy">2025</div>
       </div>
@@ -176,7 +187,11 @@
     return (diffDays % 60 + 60) % 60;
   }
 
-  function renderCalendar(year, month){ // month: 1-12
+  let currentYear, currentMonth; // 1-12
+
+  function renderCalendar(year, month){
+    currentYear = year; currentMonth = month;
+
     document.getElementById('yy').textContent = year;
     document.getElementById('mmNum').textContent = month;
 
@@ -208,7 +223,7 @@
           if(date.getFullYear()===today.getFullYear() &&
              date.getMonth()===today.getMonth() &&
              date.getDate()===today.getDate()){
-            td.classList.add('today'); // 今日の背景
+            td.classList.add('today');
           }
 
           td.innerHTML = `
@@ -227,23 +242,20 @@
     }
   }
 
-  /* month入力：変更した瞬間に反映 */
+  /* month入力：変更で即反映 */
   const monthInput = document.getElementById('monthInput');
-
   function supportsMonth(){
     const i = document.createElement('input');
     i.setAttribute('type','month');
     return i.type === 'month';
   }
-
   if(supportsMonth()){
     monthInput.addEventListener('change', ()=>{
-      if(!monthInput.value) return; // "YYYY-MM"
+      if(!monthInput.value) return;
       const [y,m] = monthInput.value.split('-').map(v=>+v);
       renderCalendar(y,m);
     });
   }else{
-    /* フォールバック（古いブラウザ用） */
     monthInput.setAttribute('placeholder','YYYY-MM');
     monthInput.addEventListener('change', ()=>{
       const m = monthInput.value.trim();
@@ -255,13 +267,33 @@
     });
   }
 
-  // 初期：今日で描画 & monthの初期値も今日に
+  /* 〈 〉で月送り */
+  document.getElementById('prevBtn').addEventListener('click', ()=>{
+    let y = currentYear, m = currentMonth - 1;
+    if(m < 1){ m = 12; y--; }
+    renderCalendar(y,m);
+    if(supportsMonth()){
+      monthInput.value = `${y}-${String(m).padStart(2,'0')}`;
+    }
+  });
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    let y = currentYear, m = currentMonth + 1;
+    if(m > 12){ m = 1; y++; }
+    renderCalendar(y,m);
+    if(supportsMonth()){
+      monthInput.value = `${y}-${String(m).padStart(2,'0')}`;
+    }
+  });
+
+  // 初期：今日で描画 & month初期値も今日に
   (function(){
     const t = new Date();
-    renderCalendar(t.getFullYear(), t.getMonth()+1);
     const yyyy = t.getFullYear();
-    const mm = String(t.getMonth()+1).padStart(2,'0');
-    monthInput.value = `${yyyy}-${mm}`;
+    const mm = t.getMonth()+1;
+    renderCalendar(yyyy, mm);
+    if(supportsMonth()){
+      monthInput.value = `${yyyy}-${String(mm).padStart(2,'0')}`;
+    }
   })();
 </script>
 </body>
