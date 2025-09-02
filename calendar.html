@@ -8,11 +8,13 @@
   :root{
     --ink:#333;
     --grid:#dcdcdc;
-    --sun:#ed529d;         /* 日曜（濃ピンク。後で調整OK） */
-    --sat:#4975c7;         /* 土曜（明るい水色。後で調整OK） */
+    --sun:#d65a8a;          /* 日曜色（調整OK） */
+    --sat:#3fa9f5;          /* 土曜色（調整OK） */
     --sub:#555;
     --bgglass:rgba(255,255,255,.55);
-    --todaybg:rgba(200,242,200,0.5); /* 今日セル背景（淡いグリーン・透明度調整OK） */
+    --todaybg:rgba(200,242,200,0.5); /* 今日セル背景（淡いグリーン、透明度はここで調整） */
+    --nav-btn-bg:#1e90ff;   /* ナビボタン背景（調整OK） */
+    --nav-btn-fg:#fff;      /* ナビボタン文字色（調整OK） */
   }
 
   html,body{margin:0;padding:0;color:var(--ink);-webkit-text-size-adjust:100%;}
@@ -29,12 +31,12 @@
     gap:14px;
   }
   .card{
-    width: min(720px, 92vw);
-    background: var(--bgglass);
+    width:min(720px,92vw);
+    background:var(--bgglass);
     border-radius:12px;
     box-shadow:0 2px 10px rgba(0,0,0,.08);
     padding:14px 14px 18px;
-    backdrop-filter: blur(2px);
+    backdrop-filter:blur(2px);
   }
 
   /* タイトル */
@@ -44,21 +46,42 @@
     font-size:22px; margin:2px 0 8px;
   }
 
-  /* 月タイトル行（左：9月 / 右：年） */
+  /* 月タイトル行（左：9 月 + タブ／右：年） */
   .monthbar{
-    display:flex; align-items:baseline; justify-content:space-between;
+    display:flex; align-items:center; justify-content:space-between;
     margin:0 4px 6px;
   }
+  .monthbox{ display:flex; align-items:baseline; gap:6px; }
   .month{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:800;
-    display:flex; align-items:baseline; gap:4px;
+    font-weight:800; display:flex; align-items:baseline; gap:4px;
   }
   .m-num{ font-size:28px; line-height:1; }
-  .m-kanji{ font-size:14px; line-height:1; } /* ← 数字の半分サイズ */
+  .m-kanji{ font-size:14px; line-height:1; } /* 数字の約半分サイズ */
   .year{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:600; font-size:16px; opacity:.85;
+  }
+
+  /* ▼タブ（年月ピッカー開閉） */
+  .picker-toggle{
+    border:1px solid #cfd6e0; background:#fff; border-radius:8px;
+    padding:6px 10px; font-size:12px; cursor:pointer;
+    display:flex; align-items:center; gap:6px;
+  }
+  .picker-toggle .caret{ font-size:10px; transform:translateY(-1px); }
+
+  .picker{ margin:8px 0 4px; display:none; }
+  .picker.open{ display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap; }
+  .picker select{
+    appearance:none; -webkit-appearance:none; outline:none;
+    font-size:14px; color:#1e90ff;
+    border:1px solid #cfd6e0; border-radius:8px; background:#fff;
+    padding:6px 22px 6px 8px;
+  }
+  .picker .apply{
+    padding:8px 16px; border:none; border-radius:999px; cursor:pointer;
+    background:var(--nav-btn-bg); color:var(--nav-btn-fg); font-size:14px;
   }
 
   /* カレンダー表 */
@@ -74,8 +97,8 @@
     font-weight:600; font-size:12px; padding:8px 0;
     border-bottom:1px solid var(--grid);
   }
-  .w-sun{ color: var(--sun); }
-  .w-sat{ color: var(--sat); }
+  .w-sun{ color:var(--sun); }
+  .w-sat{ color:var(--sat); }
 
   .cal td{
     height:78px;
@@ -87,7 +110,7 @@
   }
   .cal tr td:last-child{ border-right:none; }
 
-  /* 左上の日付数字は常に固定位置でズレない */
+  /* 左上の日付（常に固定） */
   .daynum{
     font-weight:700; font-size:12px; line-height:1;
     position:absolute; left:6px; top:6px;
@@ -95,29 +118,25 @@
 
   .kanshi{
     margin-top:18px;
-    font-size:18px; font-weight:700;  /* ←漢字はこの大きさのまま */
+    font-size:18px; font-weight:700;
   }
-
   .reading{
-    font-size:10px;                  /* ←かなり小さく */
-    color:var(--sub); margin-top:2px;
+    font-size:10px; color:var(--sub); margin-top:2px; /* かなり小さめ */
   }
 
   .empty{ background:#fafafa; }
 
-  /* 今日のセル：背景全体を淡いグリーン（四角形） */
-  .cal td.today{
-    background: var(--todaybg);
-  }
+  /* 今日のセル：背景全体に淡いグリーン */
+  .cal td.today{ background:var(--todaybg); }
 
-  /* ナビ（チェッカーへ戻る） */
+  /* 相互ナビ（2ボタン） */
   .nav{
-    margin-top:10px;
+    margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
   }
-  .btn-link{
+  .nav .btn{
     text-decoration:none; font-size:14px;
-    color:#fff; background:#1e90ff;
-    padding:8px 16px; border-radius:999px; display:inline-block;
+    background:var(--nav-btn-bg); color:var(--nav-btn-fg);
+    padding:8px 14px; border-radius:999px; display:inline-block;
   }
 
   @media (max-width:420px){
@@ -136,10 +155,22 @@
       <div class="brand">ilo.ilo 干支calendar</div>
 
       <div class="monthbar">
-        <div class="month">
-          <span class="m-num" id="mmNum">9</span><span class="m-kanji">月</span>
+        <div class="monthbox">
+          <div class="month">
+            <span class="m-num" id="mmNum">9</span><span class="m-kanji">月</span>
+          </div>
+          <button class="picker-toggle" id="togglePicker" aria-expanded="false" aria-controls="picker">
+            <span>年月</span><span class="caret">▼</span>
+          </button>
         </div>
         <div class="year" id="yy">2025</div>
+      </div>
+
+      <!-- 年月ピッカー -->
+      <div class="picker" id="picker">
+        <select id="yearSel"></select>
+        <select id="monthSel"></select>
+        <button class="apply" id="applyBtn">適用</button>
       </div>
 
       <table class="cal" id="calendar">
@@ -151,8 +182,10 @@
         <tbody id="cal-body"></tbody>
       </table>
 
+      <!-- 相互ナビ -->
       <div class="nav">
-        <a class="btn-link" href="index.html">← チェッカーへ戻る</a>
+        <a class="btn" href="index.html">日干支チェッカーへ →</a>
+        <a class="btn" href="calendar.html">日干支カレンダーへ →</a>
       </div>
     </div>
   </div>
@@ -164,16 +197,14 @@
   const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
   const branchesReading = ["ね","うし","とら","う","たつ","み","うま","ひつじ","さる","とり","いぬ","い"];
 
-  const baseDate  = new Date(1984, 2, 31); // 甲子
-  const baseIndex = 0;
-
+  const baseDate = new Date(1984, 2, 31); // 甲子
   function kanshiIndexFromDate(date){
     const diffDays = Math.floor((date - baseDate) / (1000*60*60*24));
-    return (baseIndex + (diffDays % 60) + 60) % 60;
+    return (diffDays % 60 + 60) % 60;
   }
 
+  /* カレンダー描画 */
   function renderCalendar(year, month){ // month: 1-12
-    // 見出し
     document.getElementById('yy').textContent = year;
     document.getElementById('mmNum').textContent = month;
 
@@ -198,16 +229,14 @@
           const k    = stems[idx % 10] + branches[idx % 12];
           const rubi = stemsReading[idx % 10] + branchesReading[idx % 12];
 
-          // 曜日カラー（数字・文字に反映）
           if(c===0){ td.style.setProperty('color','var(--sun)'); }
           if(c===6){ td.style.setProperty('color','var(--sat)'); }
 
-          // 今日なら背景を付与（四角）
           const today = new Date();
           if(date.getFullYear()===today.getFullYear() &&
              date.getMonth()===today.getMonth() &&
              date.getDate()===today.getDate()){
-            td.classList.add('today');
+            td.classList.add('today'); // 今日の背景
           }
 
           td.innerHTML = `
@@ -219,7 +248,6 @@
         } else {
           td.className = 'empty';
         }
-
         tr.appendChild(td);
       }
       tbody.appendChild(tr);
@@ -227,10 +255,31 @@
     }
   }
 
-  // 初期：今日の年月で描画
+  /* 年月ピッカー */
+  const ySel = document.getElementById('yearSel');
+  const mSel = document.getElementById('monthSel');
+  for(let y=1950; y<=2060; y++) ySel.add(new Option(y,y));
+  for(let m=1; m<=12; m++) mSel.add(new Option(m,m));
+
+  const toggle = document.getElementById('togglePicker');
+  const picker = document.getElementById('picker');
+  toggle.addEventListener('click', ()=>{
+    const open = picker.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.getElementById('applyBtn').addEventListener('click', ()=>{
+    const y = +ySel.value, m = +mSel.value;
+    renderCalendar(y,m);
+    picker.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+  });
+
+  // 初期：今日の年月で描画 & ピッカー初期値も今日に
   (function(){
     const t = new Date();
     renderCalendar(t.getFullYear(), t.getMonth()+1);
+    ySel.value = t.getFullYear();
+    mSel.value = t.getMonth()+1;
   })();
 </script>
 </body>
