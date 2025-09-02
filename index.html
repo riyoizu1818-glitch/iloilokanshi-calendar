@@ -7,22 +7,33 @@
 <style>
   :root{
     --ink:#333; --brand:#ff68b6;
-    /* 入力フィールドのスタイル */
-    --field-fg:#555; --field-size:16px; --field-weight:400;
-    --field-border:#cfd6e0; --field-radius:8px; --field-height:38px;
-    --field-pad-x:25px; --caret-color:#7aa8ff;
 
-    /* ナビボタン */
+    /* 入力（年月/日 共通） */
+    --field-fg:#555;              /* 文字色（グレー系） */
+    --field-size:16px;            /* フォントサイズ */
+    --field-weight:400;           /* 太さ 400〜600 */
+    --field-border:#cfd6e0;       /* 枠線色 */
+    --field-radius:8px;           /* 角丸 */
+    --field-height:38px;          /* ボックス高さ（年月/日 共通） */
+    --field-pad-x:10px;           /* 左右の内側余白（テキスト側） */
+    --caret-color:#7aa8ff;        /* ▼の色 */
+
+    /* 年月ボックスの詰め具合 */
+    --ym-gap:6px;                 /* 「年」「月」間の隙間 */
+    --ym-caret-pad:22px;          /* 右側の▼ぶんの余白 */
+
+    /* 結果表示の調整 */
+    --res-kanshi-size:26px;       /* 甲戌など */
+    --res-reading-size:12px;      /* きのえいぬ */
+
+    /* 〈甲🌳樹木の人〉の調整（←ここを変えればOK） */
+    --persona-size:15px;
+    --persona-weight:600;
+    --persona-color:#444;
+
+    /* ボタン/OFUSE */
     --nav-btn-bg:#3b66bce2; --nav-btn-fg:#fff;
-    /* OFUSE */
     --support-offset: 10px;
-
-    /* 干支＆読み仮名の余白 */
-    --gap-kanshi-reading:-4px; /* 干支と読み仮名の間だけ調整 */
-
-    /* 「〇〇の人」表示 */
-    --persona-size:14px;
-    --persona-weight:600; /* ← ここを400〜700で変えて太さ調整 */
   }
 
   html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); }
@@ -36,68 +47,92 @@
     display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px;
   }
 
+  /* 丸カード */
   .card{
     background:rgba(255,255,255,.6);
-    border-radius:50%; width:260px; height:260px;
+    border-radius:50%;
+    width:260px; height:260px;
     box-shadow:0 8px 24px rgba(0,0,0,.1);
     display:flex; flex-direction:column; justify-content:center; align-items:center;
     padding:18px;
   }
 
+  /* ロゴ & サブ */
   .logo{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:900; font-size:34px; margin:0;
+    font-weight:900; font-size:34px; letter-spacing:.02em; margin:0;
   }
   .sub{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:400; font-size:17px; margin:2px 0 0;
   }
 
-  /* 入力 */
+  /* 入力行 */
   .row{ display:flex; gap:8px; align-items:center; justify-content:center; margin-top:10px; }
+
+  /* 共通フィールド基礎（年月/日） */
   .field{
     height:var(--field-height);
-    border:1px solid var(--field-border); border-radius:var(--field-radius);
-    background:#fff; font-size:var(--field-size); font-weight:var(--field-weight);
-    color:var(--field-fg); line-height:1;
+    border:1px solid var(--field-border);
+    border-radius:var(--field-radius);
+    background:#fff;
+    font-size:var(--field-size);
+    font-weight:var(--field-weight);
+    color:var(--field-fg);
+    line-height:1;
   }
 
+  /* 年月：ひと箱（中に 年・月・▼ を含める） */
   .ym-box{
-    position:relative; display:inline-flex; align-items:center; gap:8px;
-    padding:0 calc(var(--field-pad-x) + 18px) 0 var(--field-pad-x);
+    position:relative; display:inline-flex; align-items:center;
+    gap:var(--ym-gap);
+    padding:0 calc(var(--field-pad-x) + var(--ym-caret-pad)) 0 var(--field-pad-x);
   }
-  .ym-year,.ym-month,.ym-suffix{ pointer-events:none; user-select:none; }
+  .ym-year, .ym-month, .ym-suffix{ pointer-events:none; user-select:none; }
   .ym-suffix{ opacity:.9; }
-  .ym-caret{ position:absolute; right:8px; top:50%; transform:translateY(-50%);
-    font-size:10px; color:var(--caret-color); pointer-events:none; }
+  .ym-caret{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-size:10px; color:var(--caret-color); pointer-events:none;
+  }
+  /* スマホでホイールを確実に出すため、全面に透明 month 入力 */
   .ym-box input[type="month"]{
     position:absolute; inset:0; width:100%; height:100%;
     opacity:0; border:0; background:transparent; appearance:none; -webkit-appearance:none;
     cursor:pointer;
   }
 
+  /* 日：ボックス内に「日」と「▼」を入れる（年月と高さ＆文字感を揃え） */
   .day-box{ position:relative; display:inline-block; padding:0 var(--field-pad-x); }
   .day-box select{
     appearance:none; -webkit-appearance:none; outline:none;
     border:0; background:transparent; color:var(--field-fg);
     font-size:var(--field-size); font-weight:var(--field-weight);
-    height:100%; padding-right:32px;
+    height:100%; padding-right:32px; /* 「日」と▼のスペース */
   }
-  .day-suffix{ position:absolute; right:22px; top:50%; transform:translateY(-50%);
-    font-size:var(--field-size); font-weight:var(--field-weight); color:var(--field-fg); opacity:.9; }
+  .day-suffix{
+    position:absolute; right:22px; top:50%; transform:translateY(-50%);
+    font-size:var(--field-size); font-weight:var(--field-weight);
+    color:var(--field-fg); pointer-events:none; user-select:none; opacity:.9;
+  }
   .day-box::after{
     content:"▼"; position:absolute; right:8px; top:50%; transform:translateY(-50%);
     font-size:10px; color:var(--caret-color); pointer-events:none;
   }
 
-  .result{ margin-top:12px; font-size:26px; font-weight:700; min-height:32px; }
-  .reading{ margin-top:var(--gap-kanshi-reading); font-size:12px; color:#444; min-height:16px; }
+  /* 結果：干支と読みを近づける（詰め気味） */
+  .result{ margin-top:10px; font-size:var(--res-kanshi-size); font-weight:700; min-height:30px; }
+  .reading{ margin-top:2px; font-size:var(--res-reading-size); color:#444; min-height:16px; }
 
+  /* 〈甲🌳樹木の人〉（サイズ・太さを変数で調整可能） */
   .persona{
-    margin-top:4px; font-size:var(--persona-size);
-    font-weight:var(--persona-weight); color:#222;
+    margin-top:4px;
+    font-size:var(--persona-size);
+    font-weight:var(--persona-weight);
+    color:var(--persona-color);
+    min-height:18px;
   }
 
+  /* カレンダーへボタン（丸カードの少し下） */
   .nav{ margin-top:4px; }
   .nav .to-calendar{
     text-decoration:none; font-size:14px; font-weight:600;
@@ -105,6 +140,7 @@
     padding:8px 14px; border-radius:999px; display:inline-block;
   }
 
+  /* OFUSE固定（距離は --support-offset で調整） */
   .support-footer{
     position:fixed; left:0; right:0; bottom:var(--support-offset); z-index:10; text-align:center;
   }
@@ -112,6 +148,9 @@
     text-decoration:none; font-size:12px; font-weight:600;
     color:#ff7f50; background:transparent; border:2px solid #ff7f50;
     padding:6px 10px; border-radius:10px; display:inline-block; opacity:.9;
+  }
+  @media (max-width:420px){
+    .support-btn{ font-size:11px; padding:5px 9px; }
   }
 </style>
 </head>
@@ -122,6 +161,7 @@
       <div class="sub">日干支 checker</div>
 
       <div class="row">
+        <!-- 年月：ひと箱（「2025 年  9 月 ▼」） -->
         <span class="field ym-box">
           <span class="ym-year" id="ymYear">----</span>
           <span class="ym-suffix">年</span>
@@ -130,12 +170,15 @@
           <span class="ym-caret">▼</span>
           <input type="month" id="ymInput" />
         </span>
+
+        <!-- 日：ひと箱（「2 日 ▼」） -->
         <span class="field day-box">
           <select id="day"></select>
           <span class="day-suffix">日</span>
         </span>
       </div>
 
+      <!-- 自動更新：ボタンなし -->
       <div class="result" id="result"></div>
       <div class="reading" id="reading"></div>
       <div class="persona" id="persona"></div>
@@ -151,76 +194,117 @@
   </div>
 
 <script>
+  /* 干支データ */
   const stems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
   const stemsReading = ["きのえ","きのと","ひのえ","ひのと","つちのえ","つちのと","かのえ","かのと","みずのえ","みずのと"];
   const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
   const branchesReading = ["ね","うし","とら","う","たつ","み","うま","ひつじ","さる","とり","いぬ","い"];
 
+  /* 十干キャッチ */
   const stemPersona = {
-    "甲":"🌳樹木の人","乙":"🪻草花の人","丙":"☀️太陽の人","丁":"🔥炎の人",
-    "戊":"⛰️山の人","己":"🌱大地の人","庚":"🪨岩・鉄塊の人","辛":"💍宝石の人",
-    "壬":"🌊海・大河の人","癸":"☔️雨の人"
+    "甲":"🌳樹木の人","乙":"🪻草花の人","丙":"☀️太陽の人","丁":"🔥炎の人","戊":"⛰️山の人",
+    "己":"🌱大地の人","庚":"🪨岩・鉄塊の人","辛":"💍宝石の人","壬":"🌊海・大河の人","癸":"☔️雨の人"
   };
 
-  const baseDate = new Date(1984, 2, 31);
+  const baseDate  = new Date(1984, 2, 31); // 3/31 甲子
   function kanshiIndexFromDate(date){
-    const diffDays = Math.floor((date - baseDate)/(1000*60*60*24));
+    const diffDays = Math.floor((date - baseDate) / (1000*60*60*24));
     return (diffDays % 60 + 60) % 60;
   }
 
+  /* DOM */
   const ymInput = document.getElementById('ymInput');
-  const ymYear = document.getElementById('ymYear');
+  const ymYear  = document.getElementById('ymYear');
   const ymMonth = document.getElementById('ymMonth');
-  const daySel = document.getElementById('day');
+  const daySel  = document.getElementById('day');
+  const resultEl  = document.getElementById('result');
+  const readingEl = document.getElementById('reading');
+  const personaEl = document.getElementById('persona');
 
+  /* 内部状態：年・月（1-12） */
   let curYear, curMonth;
 
+  /* 日の選択肢を月ごとに更新 */
   function updateDays(){
     const last = new Date(curYear, curMonth, 0).getDate();
     const keep = +daySel.value || 1;
-    daySel.innerHTML='';
-    for(let d=1; d<=last; d++){ daySel.add(new Option(d,d)); }
+    daySel.innerHTML = '';
+    for(let d=1; d<=last; d++){ daySel.add(new Option(d, d)); }
     daySel.value = Math.min(keep, last);
   }
 
+  /* 年月ラベル更新（ボックス内表示） */
   function updateYmLabel(){
-    ymYear.textContent = curYear;
+    ymYear.textContent  = curYear;
     ymMonth.textContent = curMonth;
   }
 
-  function calculate(){
+  /* 結果の更新（干支・読み・〈甲🌳樹木の人〉） */
+  function updateResult(){
     const d = +daySel.value;
     if(!curYear || !curMonth || !d) return;
+
     const date = new Date(curYear, curMonth-1, d);
-    const idx = kanshiIndexFromDate(date);
-    const stem=stems[idx%10], branch=branches[idx%12];
-    const stemR=stemsReading[idx%10], branchR=branchesReading[idx%12];
-    document.getElementById('result').textContent = stem + branch;
-    document.getElementById('reading').textContent = stemR + branchR;
-    document.getElementById('persona').textContent = `〈${stem}${stemPersona[stem]}〉`;
+    const idx  = kanshiIndexFromDate(date);
+
+    const stem   = stems[idx%10];
+    const branch = branches[idx%12];
+    const stemR  = stemsReading[idx%10];
+    const branchR= branchesReading[idx%12];
+
+    resultEl.textContent  = stem + branch;              // 甲戌
+    readingEl.textContent = stemR + branchR;            // きのえいぬ（←ひらがなOK）
+
+    const tag = stemPersona[stem] ? `〈${stem}${stemPersona[stem]}〉` : "";
+    personaEl.textContent = tag;                        // 〈甲🌳樹木の人〉
   }
 
-  if(ymInput.type === "month"){
+  /* iOSのmonthホイール対応 */
+  function supportsMonth(){
+    const i = document.createElement('input');
+    i.setAttribute('type','month');
+    return i.type === 'month';
+  }
+
+  /* 年月変更 → 自動更新 */
+  if(supportsMonth()){
     ymInput.addEventListener('change', ()=>{
-      if(!ymInput.value) return;
+      if(!ymInput.value) return; // "YYYY-MM"
       const [y,m] = ymInput.value.split('-').map(v=>+v);
-      curYear=y; curMonth=m; updateYmLabel(); updateDays(); calculate();
+      curYear = y; curMonth = m;
+      updateYmLabel(); updateDays(); updateResult();
+    });
+  }else{
+    ymInput.type = 'text';
+    ymInput.placeholder = 'YYYY-MM';
+    ymInput.addEventListener('change', ()=>{
+      const v = ymInput.value.trim();
+      const ok = /^\d{4}-(0[1-9]|1[0-2])$/.test(v);
+      if(ok){
+        const [y,m] = v.split('-').map(v=>+v);
+        curYear = y; curMonth = m;
+        updateYmLabel(); updateDays(); updateResult();
+      }
     });
   }
 
+  /* 日変更 → 自動更新 */
+  daySel.addEventListener('change', updateResult);
+
+  /* 初期：今日でセット＆即表示 */
   (function(){
     const t=new Date();
-    curYear=t.getFullYear(); curMonth=t.getMonth()+1;
+    curYear  = t.getFullYear();
+    curMonth = t.getMonth()+1;
     updateYmLabel();
-    if(ymInput.type==="month"){
-      ymInput.value=`${curYear}-${String(curMonth).padStart(2,'0')}`;
+    if(supportsMonth()){
+      ymInput.value = `${curYear}-${String(curMonth).padStart(2,'0')}`;
     }
-    for(let d=1; d<=31; d++){ daySel.add(new Option(d,d)); }
-    updateDays(); daySel.value=t.getDate();
-    calculate();
+    for(let d=1; d<=31; d++){ daySel.add(new Option(d, d)); }
+    updateDays();
+    daySel.value = t.getDate();
+    updateResult();   // 初期表示
   })();
-
-  daySel.addEventListener('change', calculate);
 </script>
 </body>
 </html>
