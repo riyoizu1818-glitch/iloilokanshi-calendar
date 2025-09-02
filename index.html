@@ -7,7 +7,7 @@
 <style>
   :root{
     --ink:#333; --brand:#ff68b6; --white:#fff;
-    --field-fg:#555;         /* 入力系の文字色（グレー） */
+    --field-fg:#555;         /* 入力文字（グレー） */
     --border:#cfd6e0;
     --bgglass:rgba(255,255,255,.6);
     --nav-btn-bg:#3b66bce2;  --nav-btn-fg:#fff;  /* カレンダーと揃え */
@@ -37,36 +37,43 @@
   .logo{ font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:900; font-size:34px; margin:0; letter-spacing:.02em; }
   .sub { font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:400; font-size:17px; margin:2px 0 0; }
 
-  /* 入力行（年＋月の長箱＋日） */
+  /* 入力行（年＋月ひと箱、日） */
   .row{ display:flex; gap:8px; align-items:center; justify-content:center; margin-top:10px; }
 
-  /* ベースselect */
-  select{
-    appearance:none; -webkit-appearance:none; outline:none;
-    font-size:16px; color:var(--field-fg);
-    border:1px solid var(--border); background:rgba(255,255,255,.96);
-    border-radius:8px; line-height:1.1;
-  }
-
-  /* 年＋月 合体ボックス */
-  .ym-group{
-    position:relative; display:inline-flex; align-items:baseline; gap:8px;
+  /* 年月ひと箱（見える箱＋上に透明inputを重ねる） */
+  .ym-pick{
+    position:relative; display:inline-block;
     border:1px solid var(--border); border-radius:8px; background:#fff;
-    padding:6px 28px 6px 8px;  /* 右にカーソル用の余白 */
+    padding:6px 28px 6px 10px;               /* 右に▼の領域 */
+    min-width:150px; text-align:left;
   }
-  .ym-group .y{ width:88px; border:0; padding:0; background:transparent; }
-  .ym-group .sep{ color:var(--field-fg); font-size:14px; }  /* 「年」 */
-  .ym-group .m{ width:60px; border:0; padding:0 16px 0 0; background:transparent; } /* 右に▼余白 */
-  .ym-group .caret{
+  .ym-label{
+    color:var(--field-fg); font-size:16px; letter-spacing:.02em;
+    user-select:none;
+  }
+  .ym-caret{
     position:absolute; right:8px; top:50%; transform:translateY(-50%);
     font-size:10px; color:#7aa8ff; pointer-events:none;
   }
-  /* 外側ユニット（ボックスの外に付ける「月」「日」） */
+  /* 実体の input[type=month]：箱全体を覆う透明入力（スマホで確実にホイール） */
+  .ym-pick input[type="month"]{
+    position:absolute; inset:0; width:100%; height:100%;
+    opacity:0; border:0; background:transparent; appearance:none; -webkit-appearance:none;
+    cursor:pointer;
+  }
+
+  /* 外側ユニット（箱の外につける「月」「日」） */
   .unit{ font-weight:600; font-size:13px; color:#444; }
 
-  /* 日だけ単独ボックス（サイズは従来どおり） */
+  /* 日のボックス（従来どおり） */
   .sel{ position:relative; display:inline-block; }
-  .sel-day select{ width:60px; padding:6px 22px 6px 8px; }
+  .sel-day select{
+    appearance:none; -webkit-appearance:none; outline:none;
+    font-size:16px; color:var(--field-fg);
+    border:1px solid var(--border); background:rgba(255,255,255,.96);
+    border-radius:8px; padding:6px 22px 6px 8px; line-height:1.1;
+    width:60px;
+  }
   .sel::after{
     content:"▼"; position:absolute; right:8px; top:50%; transform:translateY(-52%);
     font-size:10px; color:#7aa8ff; pointer-events:none;
@@ -106,12 +113,11 @@
       <div class="sub">日干支 checker</div>
 
       <div class="row">
-        <!-- 年＋月：ひとつの長いボックス（中に 年 と 月 の数字＆▼。月の「文字」は外） -->
-        <span class="ym-group">
-          <select id="year" class="y"></select>
-          <span class="sep">年</span>
-          <select id="month" class="m"></select>
-          <span class="caret">▼</span>
+        <!-- 年＋月：ひとつの長いボックス。中に「2025年  9 ▼」 -->
+        <span class="ym-pick">
+          <span class="ym-label" id="ymLabel">----</span>
+          <span class="ym-caret">▼</span>
+          <input type="month" id="ymInput" />
         </span>
         <span class="unit">月</span>
 
@@ -136,59 +142,100 @@
   </div>
 
 <script>
+  /* 干支データ */
   const stems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
   const stemsReading = ["きのえ","きのと","ひのえ","ひのと","つちのえ","つちのと","かのえ","かのと","みずのえ","みずのと"];
   const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
   const branchesReading = ["ね","うし","とら","う","たつ","み","うま","ひつじ","さる","とり","いぬ","い"];
 
-  const baseDate  = new Date(1984, 2, 31);
-  const baseIndex = 0;
+  const baseDate  = new Date(1984, 2, 31); // 3/31 甲子
+  function kanshiIndexFromDate(date){
+    const diffDays = Math.floor((date - baseDate) / (1000*60*60*24));
+    return (diffDays % 60 + 60) % 60;
+  }
 
-  const yearSel  = document.getElementById('year');
-  const monthSel = document.getElementById('month');
-  const daySel   = document.getElementById('day');
+  /* DOM参照 */
+  const ymInput = document.getElementById('ymInput');
+  const ymLabel = document.getElementById('ymLabel');
+  const daySel  = document.getElementById('day');
 
-  for(let y=1950; y<=2060; y++){ yearSel.add(new Option(y, y)); }
-  for(let m=1; m<=12; m++){ monthSel.add(new Option(m, m)); }
-  for(let d=1; d<=31; d++){ daySel.add(new Option(d, d)); }
+  /* 内部の年・月（1-12）を保持 */
+  let curYear, curMonth;
 
+  /* 日の選択肢を月ごとに更新 */
   function updateDays(){
-    const y = +yearSel.value, m = +monthSel.value;
-    const last = new Date(y, m, 0).getDate();
+    const last = new Date(curYear, curMonth, 0).getDate();
     const keep = +daySel.value || 1;
-    daySel.innerHTML='';
+    daySel.innerHTML = '';
     for(let d=1; d<=last; d++){ daySel.add(new Option(d, d)); }
     daySel.value = Math.min(keep, last);
   }
 
-  function kanshiIndexFromDate(date){
-    const diffDays = Math.floor((date - baseDate) / (1000*60*60*24));
-    return (baseIndex + (diffDays % 60) + 60) % 60;
+  /* ラベルの「2025年  9 ▼」を更新 */
+  function updateYmLabel(){
+    ymLabel.textContent = `${curYear}年  ${curMonth}`;
   }
 
+  /* 計算 */
   function calculate(){
-    const y = +yearSel.value, m = +monthSel.value, d = +daySel.value;
-    if(!y || !m || !d) return;
-    const date = new Date(y, m-1, d);
+    const d = +daySel.value;
+    if(!curYear || !curMonth || !d) return;
+    const date = new Date(curYear, curMonth-1, d);
     const idx  = kanshiIndexFromDate(date);
     const stem=stems[idx%10], branch=branches[idx%12];
-    const stemR=stemsReading[idx%10], branchR=branchesReading[idx%12];
+    const stemR=stemsReading[idx%10], branchR=branches[idx%12];
     document.getElementById('result').textContent  = stem + branch;
     document.getElementById('reading').textContent = stemR + branchR;
   }
 
-  // 初期表示：今日で選択＆結果表示
-  (function(){
-    const t=new Date();
-    yearSel.value = Math.min(Math.max(t.getFullYear(),1950),2060);
-    monthSel.value = t.getMonth()+1;
+  /* month入力：変更で即反映（ホイールで年・月を同時に選択） */
+  function supportsMonth(){
+    const i = document.createElement('input');
+    i.setAttribute('type','month');
+    return i.type === 'month';
+  }
+  if(supportsMonth()){
+    ymInput.addEventListener('change', ()=>{
+      if(!ymInput.value) return;       // "YYYY-MM"
+      const [y,m] = ymInput.value.split('-').map(v=>+v);
+      curYear = y; curMonth = m;
+      updateYmLabel();
+      updateDays();
+    });
+  }else{
+    /* 旧環境フォールバック：テキストで YYYY-MM を受け付け */
+    ymInput.type = 'text';
+    ymInput.placeholder = 'YYYY-MM';
+    ymInput.addEventListener('change', ()=>{
+      const v = ymInput.value.trim();
+      const ok = /^\d{4}-(0[1-9]|1[0-2])$/.test(v);
+      if(ok){
+        const [y,m] = v.split('-').map(v=>+v);
+        curYear = y; curMonth = m;
+        updateYmLabel(); updateDays();
+      }
+    });
+  }
+
+  /* 初期：今日の年月・日をセットし、ラベルも反映、結果も表示 */
+  (function init(){
+    const t = new Date();
+    curYear = t.getFullYear();
+    curMonth = t.getMonth()+1;
+    updateYmLabel();
+    if(supportsMonth()){
+      ymInput.value = `${curYear}-${String(curMonth).padStart(2,'0')}`;
+    }
+    // 日の選択肢
+    for(let d=1; d<=31; d++){ daySel.add(new Option(d, d)); }
     updateDays();
     daySel.value = t.getDate();
     calculate();
   })();
 
-  yearSel.addEventListener('change', updateDays);
-  monthSel.addEventListener('change', updateDays);
+  /* 月が変わったら日数再計算 */
+  daySel.addEventListener('change', ()=>{ /* 日を変えても結果はボタンで */ });
+
 </script>
 </body>
 </html>
