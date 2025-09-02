@@ -37,103 +37,82 @@
     box-shadow:0 2px 10px rgba(0,0,0,.08);
     padding:14px 14px 18px;
     backdrop-filter:blur(2px);
-    position:relative; /* 端ナビの基準 */
+    position:relative;
   }
 
-  /* タイトル */
   .brand{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:900; letter-spacing:.02em;
     font-size:22px; margin:2px 0 8px;
   }
 
-  /* 月タイトル行：左右端に〈〉、中央に [年][月][▼] */
+  /* 〈 2025 9 月 ▼ 〉 を中央、〈/〉は左右端 */
   .monthbar{
     position:relative;
     display:flex; justify-content:center; align-items:center;
-    margin:4px 0 8px;
-    min-height:44px;
+    margin:4px 0 8px; min-height:44px;
   }
-  .centerhead{
-    display:inline-flex; align-items:baseline; gap:8px;
-  }
+  .centerhead{ display:inline-flex; align-items:baseline; gap:8px; }
   .year{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:600; font-size:16px; opacity:.85; /* 小さめのまま */
+    font-weight:600; font-size:16px; opacity:.85;
   }
   .month{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:800; display:inline-flex; align-items:baseline; gap:4px;
   }
-  .m-num{ font-size:56px; line-height:1; }   /* 大きい9 */
-  .m-kanji{ font-size:14px; line-height:1; } /* 「月」は小さめ */
+  .m-num{ font-size:56px; line-height:1; }
+  .m-kanji{ font-size:14px; line-height:1; }
 
-  /* ▼（ホイール呼び出し） */
   .caret-btn{
     background:transparent; border:none; cursor:pointer;
     font-size:16px; line-height:1; padding:6px 6px; border-radius:6px;
   }
   .caret-btn:active{ transform:scale(.96); }
 
-  /* 〈 / 〉：記号だけを左右端に配置（押しやすいタップ領域） */
   .edge{
     position:absolute; top:50%; transform:translateY(-50%);
     background:transparent; border:none; cursor:pointer;
     font-size:20px; line-height:1; color:var(--ink);
-    padding:12px; /* タップ領域確保 */
-    user-select:none;
+    padding:12px; user-select:none;
   }
-  .edge-left{  left:0; }
+  .edge-left{ left:0; }
   .edge-right{ right:0; }
   .edge:active{ transform:translateY(-50%) scale(.96); }
 
-  /* カレンダー表 */
+  /* input[type=month] は「見えないが存在する」幽霊配置に */
+  .picker-ghost{
+    position:absolute; left:50%; top:0; transform:translateX(-50%);
+    width:1px; height:1px; opacity:0; border:0; background:transparent;
+    pointer-events:none; /* クリック不要。JSでshowPicker/clickする */
+  }
+
   .cal{
-    width:100%;
-    border-collapse:collapse;
-    table-layout:fixed;
-    border:1px solid var(--grid);
-    border-radius:8px; overflow:hidden;
-    background:#fff;
+    width:100%; border-collapse:collapse; table-layout:fixed;
+    border:1px solid var(--grid); border-radius:8px; overflow:hidden; background:#fff;
   }
   .cal thead th{
-    font-weight:600; font-size:12px; padding:8px 0;
-    border-bottom:1px solid var(--grid);
+    font-weight:600; font-size:12px; padding:8px 0; border-bottom:1px solid var(--grid);
   }
-  .w-sun{ color:var(--sun); }
-  .w-sat{ color:var(--sat); }
+  .w-sun{ color:var(--sun); } .w-sat{ color:var(--sat); }
 
   .cal td{
-    height:78px;
-    border-right:1px solid var(--grid);
-    border-bottom:1px solid var(--grid);
-    vertical-align:top;
-    padding:6px 6px 4px;
-    position:relative;
+    height:78px; border-right:1px solid var(--grid); border-bottom:1px solid var(--grid);
+    vertical-align:top; padding:6px 6px 4px; position:relative;
   }
   .cal tr td:last-child{ border-right:none; }
 
-  .daynum{
-    font-weight:700; font-size:12px; line-height:1;
-    position:absolute; left:6px; top:6px;
-  }
+  .daynum{ font-weight:700; font-size:12px; line-height:1; position:absolute; left:6px; top:6px; }
   .kanshi{ margin-top:18px; font-size:18px; font-weight:700; }
   .reading{ font-size:10px; color:var(--sub); margin-top:2px; }
   .empty{ background:#fafafa; }
   .cal td.today{ background:var(--todaybg); }
 
-  /* ナビ（チェッカーへ）— 太さを600で合わせる */
   .nav{ margin-top:12px; }
   .nav .btn{
     text-decoration:none; font-size:14px; font-weight:600;
     background:var(--nav-btn-bg); color:var(--nav-btn-fg);
     padding:8px 14px; border-radius:999px; display:inline-block;
-  }
-
-  /* iOSのmonth入力は隠しておき、▼で呼び出す */
-  .visually-hidden{
-    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
-    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
   }
 
   @media (max-width:420px){
@@ -157,8 +136,8 @@
           <span class="year" id="yy">2025</span>
           <span class="month"><span class="m-num" id="mmNum">9</span><span class="m-kanji">月</span></span>
           <button class="caret-btn" id="openPicker" aria-label="年月を選ぶ">▼</button>
-          <!-- 実体は隠しておき、▼で呼び出す -->
-          <input type="month" id="monthInput" class="visually-hidden" />
+          <!-- 実体は「見えないが存在する」 -->
+          <input type="month" id="monthInput" class="picker-ghost" />
         </div>
 
         <button class="edge edge-right" id="nextBtn" aria-label="次の月へ">〉</button>
@@ -173,7 +152,6 @@
         <tbody id="cal-body"></tbody>
       </table>
 
-      <!-- ナビ：チェッカーへ（太さ600で統一） -->
       <div class="nav">
         <a class="btn" href="index.html">日干支チェッカーへ →</a>
       </div>
@@ -181,32 +159,28 @@
   </div>
 
 <script>
-  /* 干支データ */
   const stems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
   const stemsReading = ["きのえ","きのと","ひのえ","ひのと","つちのえ","つちのと","かのえ","かのと","みずのえ","みずのと"];
   const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
   const branchesReading = ["ね","うし","とら","う","たつ","み","うま","ひつじ","さる","とり","いぬ","い"];
-
   const baseDate = new Date(1984, 2, 31); // 甲子
   function kanshiIndexFromDate(date){
     const diffDays = Math.floor((date - baseDate) / (1000*60*60*24));
     return (diffDays % 60 + 60) % 60;
   }
 
-  let currentYear, currentMonth; // 1-12
+  let currentYear, currentMonth;
 
   function renderCalendar(year, month){
     currentYear = year; currentMonth = month;
-    document.getElementById('yy').textContent = year;
-    document.getElementById('mmNum').textContent = month;
+    yy.textContent = year;
+    mmNum.textContent = month;
 
     const first = new Date(year, month-1, 1);
     const lastDay = new Date(year, month, 0).getDate();
     const startWeek = first.getDay();
 
-    const tbody = document.getElementById('cal-body');
-    tbody.innerHTML = '';
-
+    calBody.innerHTML = '';
     let day = 1;
     for(let r=0; r<6; r++){
       const tr = document.createElement('tr');
@@ -242,12 +216,15 @@
         }
         tr.appendChild(td);
       }
-      tbody.appendChild(tr);
+      calBody.appendChild(tr);
       if(day > lastDay) break;
     }
   }
 
-  /* month入力：▼で開き、変更で即反映 */
+  const yy = document.getElementById('yy');
+  const mmNum = document.getElementById('mmNum');
+  const calBody = document.getElementById('cal-body');
+
   const monthInput = document.getElementById('monthInput');
   const openPicker = document.getElementById('openPicker');
 
@@ -258,18 +235,36 @@
   }
 
   openPicker.addEventListener('click', ()=>{
-    if(monthInput.showPicker){ monthInput.showPicker(); }
-    else { monthInput.focus(); monthInput.click(); }
+    // iOS/Safari向け：非表示要素でも showPicker() か click() を直接呼ぶ
+    if(monthInput.showPicker){ 
+      try { monthInput.showPicker(); return; } catch(e) {}
+    }
+    // フォールバック：一瞬だけ幅を作って click→すぐ戻す（見た目は変わらない）
+    const prev = { w:monthInput.style.width, h:monthInput.style.height, pe:monthInput.style.pointerEvents, op:monthInput.style.opacity };
+    monthInput.style.width = '120px';
+    monthInput.style.height = '32px';
+    monthInput.style.pointerEvents = 'auto';
+    monthInput.style.opacity = '0';
+    monthInput.click();
+    // 1秒後に元に戻す（ピッカーが開いた後でもUIには見えないまま）
+    setTimeout(()=>{
+      monthInput.style.width = prev.w || '1px';
+      monthInput.style.height = prev.h || '1px';
+      monthInput.style.pointerEvents = prev.pe || 'none';
+      monthInput.style.opacity = prev.op || '0';
+    }, 1000);
   });
 
   if(supportsMonth()){
     monthInput.addEventListener('change', ()=>{
-      if(!monthInput.value) return; // "YYYY-MM"
+      if(!monthInput.value) return;
       const [y,m] = monthInput.value.split('-').map(v=>+v);
       renderCalendar(y,m);
     });
   }else{
-    monthInput.setAttribute('placeholder','YYYY-MM');
+    // 古い環境向けフォールバック
+    monthInput.type = 'text';
+    monthInput.placeholder = 'YYYY-MM';
     monthInput.addEventListener('change', ()=>{
       const m = monthInput.value.trim();
       const ok = /^\d{4}-(0[1-9]|1[0-2])$/.test(m);
@@ -280,24 +275,19 @@
     });
   }
 
-  /* 端ボタンで月送り（monthInputの値も同期） */
+  // 端ボタンで月送り
   document.getElementById('prevBtn').addEventListener('click', ()=>{
     let y = currentYear, m = currentMonth - 1;
     if(m < 1){ m = 12; y--; }
     renderCalendar(y,m);
-    syncMonthInput(y,m);
+    if(supportsMonth()){ monthInput.value = `${y}-${String(m).padStart(2,'0')}`; }
   });
   document.getElementById('nextBtn').addEventListener('click', ()=>{
     let y = currentYear, m = currentMonth + 1;
     if(m > 12){ m = 1; y++; }
     renderCalendar(y,m);
-    syncMonthInput(y,m);
+    if(supportsMonth()){ monthInput.value = `${y}-${String(m).padStart(2,'0')}`; }
   });
-  function syncMonthInput(y,m){
-    if(supportsMonth()){
-      monthInput.value = `${y}-${String(m).padStart(2,'0')}`;
-    }
-  }
 
   // 初期：今日で描画 & month入力も今日に
   (function(){
