@@ -7,12 +7,22 @@
 <style>
   :root{
     --ink:#333; --brand:#ff68b6; --white:#fff;
-    --field-fg:#555;         /* 入力文字（グレー） */
-    --border:#cfd6e0;
-    --bgglass:rgba(255,255,255,.6);
-    --nav-btn-bg:#3b66bce2;  --nav-btn-fg:#fff;  /* カレンダーと揃え */
+    /* 入力見た目の共通トークン（ここをいじれば年月・日の見た目を一括調整） */
+    --field-fg:#555;                 /* 数字や「年」の色（グレー系） */
+    --field-font-size:16px;          /* フォントサイズ */
+    --field-font-weight:400;         /* 太さ（400〜600でお好み） */
+    --field-border:#cfd6e0;          /* 枠線色 */
+    --field-pad-v:6px;               /* 縦パディング */
+    --field-pad-h:8px;               /* 横パディング */
+    --field-radius:8px;              /* 角丸 */
+    --caret-color:#7aa8ff;           /* ▼の色 */
+    /* カレンダーへボタン（チェッカー→カレンダー） */
+    --nav-btn-bg:#3b66bce2; --nav-btn-fg:#fff;
+    /* OFUSEの固定位置（距離を調整したい場合ここを変える） */
+    --support-offset: 10px;
   }
-  html,body{ margin:0; padding:0; height:100%; color:var(--ink); -webkit-text-size-adjust:100%; }
+
+  html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); }
   body{
     font-family:'Hiragino Kaku Gothic ProN', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
     text-align:center;
@@ -25,7 +35,7 @@
 
   /* 丸カード */
   .card{
-    background:var(--bgglass);
+    background:rgba(255,255,255,.6);
     border-radius:50%;
     width:260px; height:260px;
     box-shadow:0 8px 24px rgba(0,0,0,.1);
@@ -33,50 +43,62 @@
     padding:18px;
   }
 
-  /* ロゴ＆サブ */
-  .logo{ font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:900; font-size:34px; margin:0; letter-spacing:.02em; }
-  .sub { font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:400; font-size:17px; margin:2px 0 0; }
+  /* ロゴ & サブタイトル（Futura風） */
+  .logo{
+    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
+    font-weight:900; font-size:34px; letter-spacing:.02em; margin:0;
+  }
+  .sub{
+    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
+    font-weight:400; font-size:17px; margin:2px 0 0;
+  }
 
-  /* 入力行（年＋月ひと箱、日） */
-  .row{ display:flex; gap:8px; align-items:center; justify-content:center; margin-top:10px; }
+  /* 入力行 */
+  .row{ display:flex; gap:6px; align-items:center; justify-content:center; margin-top:10px; }
 
-  /* 年月ひと箱（見える箱＋上に透明inputを重ねる） */
-  .ym-pick{
-    position:relative; display:inline-block;
-    border:1px solid var(--border); border-radius:8px; background:#fff;
-    padding:6px 28px 6px 10px;               /* 右に▼の領域 */
-    min-width:100px; text-align:left;
+  /* ベースselect（“日”に適用。年月は見せラベル方式） */
+  select{
+    appearance:none; -webkit-appearance:none; outline:none;
+    font-size:var(--field-font-size);
+    font-weight:var(--field-font-weight);
+    color:var(--field-fg);
+    border:1px solid var(--field-border);
+    background:rgba(255,255,255,.96);
+    border-radius:var(--field-radius);
+    padding:var(--field-pad-v) calc(var(--field-pad-h) + 14px) var(--field-pad-v) var(--field-pad-h);
+    line-height:1.1;
+  }
+  .sel{ position:relative; display:inline-block; }
+  .sel-day select{ width:60px; }
+  .sel::after{
+    content:"▼"; position:absolute; right:8px; top:50%; transform:translateY(-52%);
+    font-size:10px; color:var(--caret-color); pointer-events:none;
+  }
+  .unit{ font-weight:600; font-size:13px; color:#444; }
+
+  /* 年＋月：ひとまとまりボックス（見えるラベル＋全面透明の month 入力） */
+  .ym-box{
+    position:relative; display:inline-block; text-align:left;
+    border:1px solid var(--field-border); border-radius:var(--field-radius); background:#fff;
+    /* “日”select と高さを揃えるために同じパディング感にする */
+    padding:var(--field-pad-v) calc(var(--field-pad-h) + 18px) var(--field-pad-v) var(--field-pad-h);
+    min-width:150px; /* 丸カードに収まる程度。必要ならここを詰めてOK */
   }
   .ym-label{
-    color:var(--field-fg); font-size:16px; letter-spacing:.02em;
+    font-size:var(--field-font-size);
+    font-weight:var(--field-font-weight);
+    color:var(--field-fg);
     user-select:none;
   }
   .ym-caret{
     position:absolute; right:8px; top:50%; transform:translateY(-50%);
-    font-size:10px; color:#7aa8ff; pointer-events:none;
+    font-size:10px; color:var(--caret-color); pointer-events:none;
   }
-  /* 実体の input[type=month]：箱全体を覆う透明入力（スマホで確実にホイール） */
-  .ym-pick input[type="month"]{
+  /* “見える箱”の全面に month 入力を重ねて、スマホで確実にホイールを出す */
+  .ym-box input[type="month"]{
     position:absolute; inset:0; width:100%; height:100%;
     opacity:0; border:0; background:transparent; appearance:none; -webkit-appearance:none;
     cursor:pointer;
-  }
-
-  /* 外側ユニット（箱の外につける「月」「日」） */
-  .unit{ font-weight:600; font-size:13px; color:#444; }
-
-  /* 日のボックス（従来どおり） */
-  .sel{ position:relative; display:inline-block; }
-  .sel-day select{
-    appearance:none; -webkit-appearance:none; outline:none;
-    font-size:16px; color:var(--field-fg);
-    border:1px solid var(--border); background:rgba(255,255,255,.96);
-    border-radius:8px; padding:6px 22px 6px 8px; line-height:1.1;
-    width:60px;
-  }
-  .sel::after{
-    content:"▼"; position:absolute; right:8px; top:50%; transform:translateY(-52%);
-    font-size:10px; color:#7aa8ff; pointer-events:none;
   }
 
   /* CHECKボタン */
@@ -85,7 +107,7 @@
     border:none; border-radius:999px; cursor:pointer; min-height:44px;
   }
 
-  /* 結果は高さ固定でレイアウトが動かないように */
+  /* 結果エリア（高さ固定で動かないように） */
   .result{ margin-top:12px; font-size:26px; font-weight:700; min-height:32px; }
   .reading{ margin-top:0; font-size:12px; color:#444; min-height:16px; }
 
@@ -97,12 +119,17 @@
     padding:8px 14px; border-radius:999px; display:inline-block;
   }
 
-  /* OFUSE（画面最下部に小さく固定） */
-  .support-footer{ position:fixed; left:0; right:0; bottom:8px; text-align:center; }
+  /* OFUSEボタン（画面いちばん下に小さく固定・距離はCSS変数で調整OK） */
+  .support-footer{
+    position:fixed; left:0; right:0; bottom:var(--support-offset); z-index:10; text-align:center;
+  }
   .support-btn{
     text-decoration:none; font-size:12px; font-weight:600;
     color:#ff7f50; background:transparent; border:2px solid #ff7f50;
     padding:6px 10px; border-radius:10px; display:inline-block; opacity:.9;
+  }
+  @media (max-width:420px){
+    .support-btn{ font-size:11px; padding:5px 9px; }
   }
 </style>
 </head>
@@ -113,15 +140,15 @@
       <div class="sub">日干支 checker</div>
 
       <div class="row">
-        <!-- 年＋月：ひとつの長いボックス。中に「2025年  9 ▼」 -->
-        <span class="ym-pick">
+        <!-- 年月：ひと箱（中に「2025 年　9 ▼」表示。外に「月」） -->
+        <span class="ym-box">
           <span class="ym-label" id="ymLabel">----</span>
           <span class="ym-caret">▼</span>
           <input type="month" id="ymInput" />
         </span>
         <span class="unit">月</span>
 
-        <!-- 日：従来どおりの小さめボックス -->
+        <!-- 日：従来どおり -->
         <span class="sel sel-day"><select id="day"></select></span>
         <span class="unit">日</span>
       </div>
@@ -142,7 +169,7 @@
   </div>
 
 <script>
-  /* 干支データ */
+  /* 干支データ（そのまま） */
   const stems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
   const stemsReading = ["きのえ","きのと","ひのえ","ひのと","つちのえ","つちのと","かのえ","かのと","みずのえ","みずのと"];
   const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
@@ -154,15 +181,15 @@
     return (diffDays % 60 + 60) % 60;
   }
 
-  /* DOM参照 */
+  /* DOM */
   const ymInput = document.getElementById('ymInput');
   const ymLabel = document.getElementById('ymLabel');
   const daySel  = document.getElementById('day');
 
-  /* 内部の年・月（1-12）を保持 */
+  /* 内部状態：年・月（1-12） */
   let curYear, curMonth;
 
-  /* 日の選択肢を月ごとに更新 */
+  /* “日”の選択肢を月ごとに更新 */
   function updateDays(){
     const last = new Date(curYear, curMonth, 0).getDate();
     const keep = +daySel.value || 1;
@@ -171,24 +198,24 @@
     daySel.value = Math.min(keep, last);
   }
 
-  /* ラベルの「2025年  9 ▼」を更新 */
+  /* 年月ラベル（箱内の表示）を更新：「2025 年  9」 */
   function updateYmLabel(){
-    ymLabel.textContent = `${curYear}年  ${curMonth}`;
+    ymLabel.textContent = `${curYear} 年  ${curMonth}`;
   }
 
-  /* 計算 */
+  /* 計算（CHECK!で実行） */
   function calculate(){
     const d = +daySel.value;
     if(!curYear || !curMonth || !d) return;
     const date = new Date(curYear, curMonth-1, d);
     const idx  = kanshiIndexFromDate(date);
     const stem=stems[idx%10], branch=branches[idx%12];
-    const stemR=stemsReading[idx%10], branchR=branches[idx%12];
+    const stemR=stemsReading[idx%10], branchR=branchesReading[idx%12];
     document.getElementById('result').textContent  = stem + branch;
     document.getElementById('reading').textContent = stemR + branchR;
   }
 
-  /* month入力：変更で即反映（ホイールで年・月を同時に選択） */
+  /* month 入力：変更で即 年・月 を反映（iOSで年・月ホイール） */
   function supportsMonth(){
     const i = document.createElement('input');
     i.setAttribute('type','month');
@@ -196,14 +223,13 @@
   }
   if(supportsMonth()){
     ymInput.addEventListener('change', ()=>{
-      if(!ymInput.value) return;       // "YYYY-MM"
+      if(!ymInput.value) return;                  // "YYYY-MM"
       const [y,m] = ymInput.value.split('-').map(v=>+v);
       curYear = y; curMonth = m;
-      updateYmLabel();
-      updateDays();
+      updateYmLabel(); updateDays();
     });
   }else{
-    /* 旧環境フォールバック：テキストで YYYY-MM を受け付け */
+    /* 旧環境フォールバック（テキストで YYYY-MM） */
     ymInput.type = 'text';
     ymInput.placeholder = 'YYYY-MM';
     ymInput.addEventListener('change', ()=>{
@@ -217,25 +243,23 @@
     });
   }
 
-  /* 初期：今日の年月・日をセットし、ラベルも反映、結果も表示 */
-  (function init(){
-    const t = new Date();
+  /* 初期：今日をセット → ラベルと“日”を更新 → 結果も表示 */
+  (function(){
+    const t=new Date();
     curYear = t.getFullYear();
     curMonth = t.getMonth()+1;
     updateYmLabel();
     if(supportsMonth()){
       ymInput.value = `${curYear}-${String(curMonth).padStart(2,'0')}`;
     }
-    // 日の選択肢
     for(let d=1; d<=31; d++){ daySel.add(new Option(d, d)); }
     updateDays();
     daySel.value = t.getDate();
     calculate();
   })();
 
-  /* 月が変わったら日数再計算 */
-  daySel.addEventListener('change', ()=>{ /* 日を変えても結果はボタンで */ });
-
+  /* “日“変更時：結果はCHECK!で */
+  daySel.addEventListener('change', ()=>{ /* no-op */ });
 </script>
 </body>
 </html>
