@@ -3,9 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>日干支＆calendar</title>
+<title>日干支 checker</title>
 <style>
-  :root{ --ink:#333; --brand:#ff68b6; --white:#fff; --blue:#1e90ff; }
+  :root{
+    --ink:#333; --brand:#ff68b6; --white:#fff; --blue:#1e90ff;
+    /* カレンダーに合わせたナビボタン色 */
+    --nav-btn-bg:#3b66bce2;  /* ← カレンダーと同色 */
+    --nav-btn-fg:#fff;
+  }
   html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); }
   body{
     font-family:'Hiragino Kaku Gothic ProN', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
@@ -34,7 +39,7 @@
   }
   .sub{
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:400;   /* ✅ 細めに変更 */
+    font-weight:400;   /* 細めのまま */
     font-size:17px;
     margin:2px 0 0;
   }
@@ -66,11 +71,27 @@
   .result{ margin-top:12px; font-size:26px; font-weight:700; min-height:32px; }
   .reading{ margin-top:0; font-size:12px; color:#444; min-height:16px; }
 
-  /* OFUSEボタン */
+  /* カレンダーへボタン（丸カードの少し下） */
+  .nav{ margin-top:4px; }
+  .nav .to-calendar{
+    text-decoration:none; font-size:14px; font-weight:600;
+    background:var(--nav-btn-bg); color:var(--nav-btn-fg);
+    padding:8px 14px; border-radius:999px; display:inline-block;
+  }
+
+  /* OFUSEボタン（画面いちばん下に小さく固定） */
+  .support-footer{
+    position:fixed; left:0; right:0; bottom:8px; z-index:10;
+    text-align:center;
+  }
   .support-btn{
-    margin-top:6px; text-decoration:none; font-size:14px; font-weight:600; /* ✅ 少し太く */
+    text-decoration:none; font-size:12px; font-weight:600;
     color:#ff7f50; background:transparent; border:2px solid #ff7f50;
-    padding:8px 14px; border-radius:10px; display:inline-block;
+    padding:6px 10px; border-radius:10px; display:inline-block; opacity:.9;
+  }
+
+  @media (max-width:420px){
+    .support-btn{ font-size:11px; padding:5px 9px; }
   }
 </style>
 </head>
@@ -78,7 +99,8 @@
   <div class="wrap">
     <div class="card">
       <h1 class="logo">ilo.ilo</h1>
-      <div class="sub">日干支＆calendar</div>
+      <!-- タイトル差し替え：日干支 checker -->
+      <div class="sub">日干支 checker</div>
 
       <div class="row">
         <span class="sel sel-year"><select id="year"></select></span><span class="unit">年</span>
@@ -92,6 +114,14 @@
       <div class="reading" id="reading"></div>
     </div>
 
+    <!-- 丸カードの少し下に配置 -->
+    <div class="nav">
+      <a class="to-calendar" href="calendar.html" rel="noopener">日干支カレンダーへ →</a>
+    </div>
+  </div>
+
+  <!-- 画面最下部に小さく固定表示 -->
+  <div class="support-footer">
     <a class="support-btn" href="https://ofuse.me/izuiloilo" target="_blank" rel="noopener">izuを応援する</a>
   </div>
 
@@ -137,14 +167,14 @@
     document.getElementById('reading').textContent = stemR + branchR;
   }
 
-  // ✅ 初期表示：今日を選んで結果も表示
+  // 初期表示：今日を選んで結果も表示
   (function(){
     const t=new Date();
     yearSel.value=Math.min(Math.max(t.getFullYear(),1950),2060);
     monthSel.value=t.getMonth()+1;
     updateDays();
     daySel.value=t.getDate();
-    calculate(); // ← 最初に実行
+    calculate();
   })();
 
   yearSel.addEventListener('change', updateDays);
