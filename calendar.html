@@ -8,11 +8,11 @@
   :root{
     --ink:#333;
     --grid:#dcdcdc;
-    --sun:#fc579c;              
-    --sat:#6585d0;              
+    --sun:#fc579c;              /* 日曜 */
+    --sat:#6585d0;              /* 土曜 */
     --sub:#555;
     --bgglass:rgba(255,255,255,.55);
-    --todaybg:rgba(158,209,197,0.775); 
+    --todaybg:rgba(244, 246, 144, 0.989); 
     --nav-btn-bg:#ff68b6;     
     --nav-btn-fg:#fff;
   }
@@ -65,7 +65,7 @@
   .m-num{ font-size:56px; line-height:1; }
   .m-kanji{ font-size:14px; line-height:1; }
 
-  /* 年月▼ボックス（小さめ修正版） */
+  /* 年月▼ボックス（元のまま） */
   .monthpick{
     position:relative; display:inline-block;
     border:1px solid #cfd6e0; border-radius:6px; background:#fff;
@@ -81,7 +81,7 @@
     -webkit-appearance:none; cursor:pointer;
   }
 
-  /* ◀︎ / ▶︎ ボタン */
+  /* ◀︎ / ▶︎ ボタン（端固定のまま） */
   .edge{
     position:absolute; top:50%; transform:translateY(-50%);
     background:transparent; border:none; cursor:pointer;
@@ -123,10 +123,16 @@
     font-weight:700; font-size:12px; line-height:1;
     position:absolute; left:6px; top:6px;
   }
+  /* 右上の十干アイコン（追加） */
+  .emoji{ position:absolute; right:6px; top:6px; font-size:13px; }
+
   .kanshi{ margin-top:18px; font-size:18px; font-weight:700; }
   .reading{ font-size:10px; color:var(--sub); margin-top:2px; }
   .empty{ background:#fafafa; }
-  .cal td.today{ background:var(--todaybg); }
+
+  /* 今日のセル：ふわっと点灯（初期は透明 → .highlightで色） */
+  .cal td.today{ background:transparent; transition:background-color .8s ease; }
+  .cal td.today.highlight{ background:var(--todaybg); }
 
   .nav{ margin-top:12px; }
   .nav .btn{
@@ -181,23 +187,40 @@
   </div>
 
 <script>
+  /* 干支データ */
   const stems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
   const stemsReading = ["きのえ","きのと","ひのえ","ひのと","つちのえ","つちのと","かのえ","かのと","みずのえ","みずのと"];
   const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
   const branchesReading = ["ね","うし","とら","う","たつ","み","うま","ひつじ","さる","とり","いぬ","い"];
 
-  const baseDate = new Date(1984, 2, 31);
+  /* 十干→アイコン */
+  const stemEmoji = {
+    "甲":"🌳","乙":"🪻","丙":"☀️","丁":"🔥","戊":"⛰️",
+    "己":"🌱","庚":"🪨","辛":"💍","壬":"🌊","癸":"☔️"
+  };
+
+  /* 干支計算 */
+  const baseDate = new Date(1984, 2, 31); // 1984/3/31 甲子
   function kanshiIndexFromDate(date){
     const diffDays = Math.floor((date - baseDate) / (1000*60*60*24));
     return (diffDays % 60 + 60) % 60;
   }
 
+  /* DOM */
   let currentYear, currentMonth;
   const yy = document.getElementById('yy');
   const mmNum = document.getElementById('mmNum');
   const calBody = document.getElementById('cal-body');
   const monthInput = document.getElementById('monthInput');
 
+  /* month対応検出（PCでも安心） */
+  function supportsMonth(){
+    const i = document.createElement('input');
+    i.setAttribute('type','month');
+    return i.type === 'month';
+  }
+
+  /* カレンダー描画 */
   function renderCalendar(year, month){
     currentYear = year; currentMonth = month;
     yy.textContent = year;
@@ -219,12 +242,18 @@
         } else if(day <= lastDay){
           const date = new Date(year, month-1, day);
           const idx  = kanshiIndexFromDate(date);
-          const k    = stems[idx % 10] + branches[idx % 12];
-          const rubi = stemsReading[idx % 10] + branchesReading[idx % 12];
 
+          const stem = stems[idx % 10];
+          const branch = branches[idx % 12];
+          const k    = stem + branch;
+          const rubi = stemsReading[idx % 10] + branchesReading[idx % 12];
+          const emoji = stemEmoji[stem] || "";
+
+          /* 週末色（元のまま） */
           if(c===0){ td.style.color = getComputedStyle(document.documentElement).getPropertyValue('--sun'); }
           if(c===6){ td.style.color = getComputedStyle(document.documentElement).getPropertyValue('--sat'); }
 
+          /* 今日判定 */
           const today = new Date();
           if(date.getFullYear()===today.getFullYear() &&
              date.getMonth()===today.getMonth() &&
@@ -232,8 +261,10 @@
             td.classList.add('today');
           }
 
+          /* 中身：右上にemojiを追加 */
           td.innerHTML = `
             <div class="daynum">${day}</div>
+            <div class="emoji">${emoji}</div>
             <div class="kanshi">${k}</div>
             <div class="reading">${rubi}</div>
           `;
@@ -246,9 +277,16 @@
       calBody.appendChild(tr);
       if(day > lastDay) break;
     }
+
+    /* 今日のセルをふわっと点灯 */
+    setTimeout(()=>{
+      const todayCell = document.querySelector(".today");
+      if(todayCell) todayCell.classList.add("highlight");
+    },100);
   }
 
-  if(monthInput.type === "month"){
+  /* 年月入力のイベント（対応/非対応で分岐） */
+  if (supportsMonth()){
     monthInput.addEventListener('change', ()=>{
       if(!monthInput.value) return;
       const [y,m] = monthInput.value.split('-').map(v=>+v);
@@ -258,34 +296,36 @@
     monthInput.type = 'text';
     monthInput.placeholder = 'YYYY-MM';
     monthInput.addEventListener('change', ()=>{
-      const m = monthInput.value.trim();
-      const ok = /^\d{4}-(0[1-9]|1[0-2])$/.test(m);
+      const v = monthInput.value.trim();
+      const ok = /^\d{4}-(0[1-9]|1[0-2])$/.test(v);
       if(ok){
-        const [y,mo] = m.split('-').map(v=>+v);
-        renderCalendar(y,mo);
+        const [y,m] = v.split('-').map(v=>+v);
+        renderCalendar(y,m);
       }
     });
   }
 
+  /* 前後ボタン（元のまま） */
   document.getElementById('prevBtn').addEventListener('click', ()=>{
     let y = currentYear, m = currentMonth - 1;
     if(m < 1){ m = 12; y--; }
     renderCalendar(y,m);
-    if(monthInput.type==="month"){ monthInput.value = `${y}-${String(m).padStart(2,'0')}`; }
+    if(supportsMonth()){ monthInput.value = `${y}-${String(m).padStart(2,'0')}`; }
   });
   document.getElementById('nextBtn').addEventListener('click', ()=>{
     let y = currentYear, m = currentMonth + 1;
     if(m > 12){ m = 1; y++; }
     renderCalendar(y,m);
-    if(monthInput.type==="month"){ monthInput.value = `${y}-${String(m).padStart(2,'0')}`; }
+    if(supportsMonth()){ monthInput.value = `${y}-${String(m).padStart(2,'0')}`; }
   });
 
+  /* 初期表示：今日の年月で描画＆入力にも反映 */
   (function(){
     const t = new Date();
     const yyyy = t.getFullYear();
     const mm = t.getMonth()+1;
     renderCalendar(yyyy, mm);
-    if(monthInput.type==="month"){
+    if(supportsMonth()){
       monthInput.value = `${yyyy}-${String(mm).padStart(2,'0')}`;
     }
   })();
